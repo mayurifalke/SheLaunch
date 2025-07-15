@@ -1,0 +1,32 @@
+.profile-img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border: 4px solid #a754e6;
+}
+
+.custom-accordion .accordion-button {
+  background-color: #f4f2fa;
+  font-weight: bold;
+}
+
+.custom-accordion .accordion-item {
+  border-radius: 10px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.custom-btn {
+  background-color: #a754e6 !important;
+  color: white !important;
+  border: none;
+  padding: 8px 20px;
+  font-weight: 600;
+  border-radius: 25px;
+}
+
+.custom-btn:hover {
+  color: #a754e6 !important;
+  background-color: white !important;
+  border: 1px solid #a754e6 !important;
+}

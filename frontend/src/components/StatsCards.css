@@ -1,0 +1,15 @@
+.stat-card {
+  transition: all 0.3s ease-in-out;
+  background-color: #ffffff;
+  border: 1px solid #f1f1f1;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.cta-card {
+  background-color: #e6e8ff; /* light lavender background */
+  color: #111;
+}

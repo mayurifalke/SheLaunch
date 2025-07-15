@@ -1,0 +1,263 @@
+/* Optional animation */
+.animated {
+  animation: up-down 2s ease-in-out infinite alternate-reverse both;
+}
+
+/* Watch video hover effect */
+.watch-video:hover {
+  color: #6610f2; /* Bootstrap purple */
+}
+
+@keyframes up-down {
+  0% {
+    transform: translateY(10px);
+  }
+  100% {
+    transform: translateY(-10px);
+  }
+}
+.hero-section {
+  background-color: #f4eaff; /* light lavender */
+}
+
+.entrepreneur-btn {
+  background-color: #c886f7 !important;
+  color: white !important;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.entrepreneur-btn:hover {
+  background-color: #a754e6 !important;
+  color: white !important;
+}
+
+.investor-btn {
+  background-color: #ffd166 !important; /* light gold/yellow */
+  color: #333 !important;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.investor-btn:hover {
+  background-color: #fcbf49 !important;
+  color: #111 !important;
+}
+
+/* cards */
+.stat-card {
+  min-height: 140px;
+  background: linear-gradient(135deg, #c89edc, #fff);
+  border: 1px solid #e0e0e0;
+
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+
+.card-box {
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+  border-radius: 1rem;
+  background-color: white;
+}
+
+.card-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* information */
+.women-section {
+  background-color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c2361;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.section-title::after {
+  content: "";
+  width: 150px;
+  height: 10px;
+  background: rgba(167, 84, 230, 0.2);
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  z-index: -1;
+}
+
+.section-text {
+  color: #333;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  margin-bottom: 1rem;
+}
+
+.woman-img {
+  max-width: 80%;
+}
+
+.cloud-bg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: -1;
+  opacity: 0.7;
+}
+.women-section .row {
+  margin-right: 0;
+  margin-left: 0;
+}
+.women-section .col-md-7,
+.women-section .col-md-5 {
+  padding-left: 0;
+  padding-right: 0;
+}
+.woman-img {
+  max-width: 100%;
+  margin-left: -20px; /* pull image closer to text */
+}
+
+
+/* Flip card styles */
+
+/* .flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+  backface-visibility: hidden;
+  top: 0;
+  left: 0;
+}
+
+.flip-card-front {
+  background-color: #fff;
+  z-index: 2;
+} */
+
+/* .flip-card-back {
+  background-color: #e6e8ff;
+  transform: rotateY(180deg);
+} */
+
+
+/* new css */
+.card-box {
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+  border-radius: 1rem;
+  background-color: white;
+}
+
+.card-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+
+/* cards of Enterprenurs */
+.testimonial-scroll-container {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 10px;
+}
+
+/* Optional scrollbar styling */
+.testimonial-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+.testimonial-scroll-container::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 10px;
+}
+
+.testimonial-card {
+  background-color: #fdebed;
+  transition: transform 0.3s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-3px);
+}
+
+.testimonial-avatar-inside {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+
+
+/* EntrepreneurRegistration.jsx styling code */
+.documents-tab {
+  color: rgb(9, 9, 10) !important;
+  font-weight: 700;
+}
+
+.nav-link.active .documents-tab {
+  color: white !important;
+}
+
+/* EntrepreneurLogin.jsx */
+.auth-background {
+   min-height: 88vh;
+  background: url('/images/bg1.jpg') no-repeat center center fixed;
+  background-size: cover;
+}
+
+/* Blurred background image */
+.auth-background::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/images/bg1.jpg') no-repeat center center;
+  background-size: cover;
+  filter: blur(10px);
+  z-index: 0;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 500px;
+  padding: 30px;
+  border-radius: 15px;
+  border: none;
+}
+
+.glass-card {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  color: #fff;
+}
+
+.btn-purple {
+  background-color: #a754e6;
+  border: none;
+  font-weight: bold;
+  color: #fff;
+}
+
+.btn-purple:hover {
+  background-color: #933df1;
+}

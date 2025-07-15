@@ -1,0 +1,146 @@
+.fliter-btn {
+  background-color: #a754e6 !important;
+  color: white !important;
+}
+ .pitch-category{
+  background-color: #a754e6 !important;
+  color: white !important;
+}
+.fliter-btn:hover{
+  color : #a754e6 !important;
+  background-color: white !important;
+  border: 1px solid #a754e6;
+}
+
+.pitch-card {
+  background-color: #ffffff;
+  border: 1px solid #f6f0f0;
+  border-radius: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 1rem 0.125rem 1rem rgba(0, 0, 0, 0.05);
+}
+
+.pitch-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.pitch-card .btn {
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.pitch-card .btn:hover {
+  opacity: 0.9;
+}
+
+.card-head{
+  /* background-color: #a754e6; */
+}
+
+.card-text{
+  font-size: 1rem;
+}
+
+/* For Invest now modal */
+.my-investments-page {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.investment-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border-radius: 10px;
+}
+
+.investment-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.investment-card .card-title {
+  font-weight: 600;
+  color: #333;
+}
+
+.investment-card .card-text {
+  font-size: 14px;
+}
+
+.investment-card.completed {
+  border-left: 5px solid #28a745;
+  background: #e9f7ef;
+}
+
+.investment-card.active {
+  border-left: 5px solid #ffc107;
+  background: #fffbea;
+}
+
+.save-btn {
+  background-color: #eba834 !important;
+  color: white !important;
+}
+
+.save-btn:hover{
+  color : #eba834 !important;
+  background-color: white !important;
+  border: 1px solid #eba834;
+}
+
+.invest-btn {
+  background-color: #468f47 !important;
+  color: white !important;
+}
+
+.invest-btn:hover{
+  color : #468f47 !important;
+  background-color: white !important;
+  border: 1px solid #468f47;
+}
+
+.deck-btn {
+  background-color: #151d61 !important;
+  color: white !important;
+}
+
+.deck-btn:hover{
+  color : #151d61 !important;
+  background-color: white !important;
+  border: 1px solid #151d61;
+}
+
+
+
+/* for Sign up and sign modal */
+.auth-background .modal-content {
+  background: transparent;
+  border: none;
+}
+
+.auth-background .modal-dialog {
+  max-width: 500px;
+  margin: auto;
+}
+
+.glass-card {
+  position: relative;
+  background: rgba(21, 20, 20, 0.5);
+  backdrop-filter: blur(12px);
+  border-radius: 15px;
+  color: #fff;
+  box-shadow: 1px solid gray;
+}
+
+.btn-purple {
+  background-color: #a754e6;
+  border: none;
+  font-weight: bold;
+  color: #fff;
+}
+
+.btn-purple:hover {
+  background-color: #933df1;
+}
