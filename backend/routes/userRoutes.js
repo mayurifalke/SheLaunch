@@ -3,6 +3,7 @@ const router = express.Router();
 const usersController = require("../controllers/users");
 const { isUserLoggedIn } = require("../middleware/authMiddleware");
 const upload = require("../middleware/uploadMiddleware");
+const { authorizeRole } = require("../middleware/authenticateRole");
 
 // api to register the user
 router.post(
@@ -29,11 +30,11 @@ router.get("/entrepreneur-profile", isUserLoggedIn, usersController.getEntrepren
 router.get("/all-investors", usersController.getAllInvestors);
 
 // api to save Investor in enterprenur's savedInvestors array on save button
-router.post("/save-investor", isUserLoggedIn, usersController.saveInvestor);
+router.post("/save-investor", isUserLoggedIn, authorizeRole("user"), usersController.saveInvestor);
 
 //to get saved Investors 
 router.get("/get-saved-investors", isUserLoggedIn, usersController.getSavedInvestors);
 
 //to delete the investor from savedInvestors array
-router.post("/remove-saved-investor", isUserLoggedIn, usersController.removeSavedInvestor);
+router.post("/remove-saved-investor", isUserLoggedIn, authorizeRole("user"), usersController.removeSavedInvestor);
 module.exports = router;

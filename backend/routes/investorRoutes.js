@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const investorController = require("../controllers/investor");
 const { isUserLoggedIn } = require("../middleware/authMiddleware");
+const { authorizeRole } = require("../middleware/authenticateRole");
 
 // Register a new investor
 router.post("/register-investor", investorController.RegisterInvestor);
@@ -10,10 +11,10 @@ router.post("/register-investor", investorController.RegisterInvestor);
 router.get("/browse-pitches",isUserLoggedIn, investorController.getAllEntrepreneurPitches);
 
 // Save entrepreneur to investor's saved list array
-router.post("/save-entrepreneur", isUserLoggedIn, investorController.saveEntrepreneur);
+router.post("/save-entrepreneur", isUserLoggedIn, authorizeRole("investor"), investorController.saveEntrepreneur);
 
 // Mark interest in an entrepreneur
-router.post("/mark-interested", isUserLoggedIn, investorController.markInterestedEntrepreneur);
+router.post("/mark-interested", isUserLoggedIn, authorizeRole("investor"), investorController.markInterestedEntrepreneur);
 
 // Get all saved entrepreneurs for the investor
 router.get("/get-saved-entrepreneurs", isUserLoggedIn, investorController.getSavedEntrepreneurs);
@@ -22,6 +23,7 @@ router.get("/get-saved-entrepreneurs", isUserLoggedIn, investorController.getSav
 router.delete(
   "/remove-saved-entrepreneur/:entrepreneurId",
   isUserLoggedIn,
+  authorizeRole("investor"),
   investorController.removeSavedEntrepreneur
 );
 
