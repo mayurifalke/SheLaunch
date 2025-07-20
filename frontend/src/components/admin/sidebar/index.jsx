@@ -53,77 +53,14 @@ export const SideBar = () => {
 
   return (
     <Sidebar
-      backgroundColor="#000" // black background
+      backgroundColor="rgba(18, 18, 18, 0.8)" // black background
       rootStyles={{ border: 0, height: "100%" }}
       collapsed={collapsed}
       onBackdropClick={() => setToggled(false)}
       toggled={toggled}
       breakPoint="md"
     >
-      {/* <Menu
-        menuItemStyles={{
-          button: {
-            ":hover": {
-              color: "#a754e6", // green accent on hover
-              background: "transparent",
-              transition: ".4s ease",
-            },
-          },
-          icon: {
-            color: "#fff",
-            ":hover": {
-              color: "#a754e6",
-            },
-          },
-          label: {
-            color: "#fff",
-            ":hover": {
-              color: "#a754e6",
-            },
-          },
-        }}
-      >
-        <MenuItem
-          rootStyles={{
-            margin: "40px 0 20px 0",
-            color: "#fff",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            {!collapsed && (
-              <Box
-                display="flex"
-                alignItems="center"
-                gap="12px"
-                sx={{ transition: ".3s ease" }}
-              >
-                <img
-                  style={{ width: "30px", height: "30px", borderRadius: "8px" }}
-                  src="/logo2.jpg"
-                  alt="She Launch"
-                />
-                <Typography
-                  variant="h4"
-                  fontWeight="bold"
-                  textTransform="capitalize"
-                  color="#a754e6" // green accent brand color
-                >
-                  She Launch
-                </Typography>
-              </Box>
-            )}
-            <IconButton onClick={() => setCollapsed(!collapsed)} sx={{ color: "#fff" }}>
-              <MenuOutlined />
-            </IconButton>
-          </Box>
-        </MenuItem>
-      </Menu> */}
+     
           <Menu
         menuItemStyles={{
           button: {
@@ -159,6 +96,7 @@ export const SideBar = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              marginTop: "1rem",
             }}
           >
             {!collapsed && (
@@ -173,11 +111,11 @@ export const SideBar = () => {
                   src="/logo2.jpg"
                   alt="Argon"
                 />
-                <Typography
+              <Typography
                   variant="h4"
                   fontWeight="bold"
                   textTransform="capitalize"
-                  color={colors.greenAccent[500]}
+                  color="#a754e6"
                 >
                   She Launch
                 </Typography>
@@ -257,10 +195,28 @@ export const SideBar = () => {
             icon={<MdOutlineBusiness />}
             collapsed={collapsed}
           />
-          <Item
+          {/* <Item
             title="New Investor"
             path="/admin/newinvestor"
             icon={<FaBusinessTime />}
+            collapsed={collapsed}
+          /> */}
+           <Item
+            title="All Entrepreneurs"
+            path="/admin/allentrepreneurs"
+            icon={<MdOutlineBusiness />}
+            collapsed={collapsed}
+          />
+          <Item
+            title="All Investors"
+            path="/admin/allinvestors"
+            icon={<MdOutlineBusiness />}
+            collapsed={collapsed}
+          />
+           <Item
+            title="Contact Us Queries"
+            path="/admin/contactusqueries"
+            icon={<MdOutlineBusiness />}
             collapsed={collapsed}
           />
          

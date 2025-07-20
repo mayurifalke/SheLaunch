@@ -32,7 +32,17 @@ const investorSchema = new mongoose.Schema(
       minlength: [6, "Password must be at least 6 characters long"]
     },
     categories: [String],
-    investmentRange: [String],
+    // investmentRange: [String],
+    maxInvestment: {
+      type: Number, 
+      required: [true, "Maximum investment is required"],
+      // minlength: [1000, "Minimum investment must be at least 1000"]
+    },
+    minInvestment: {
+      type: Number, 
+      required: [true, "Minimum investment is required"],
+      minlength: [1000, "Minimum investment must be at least 1000"]
+    },
     location: {
       type: String,
       maxlength: [100, "Location cannot exceed 100 characters"]
@@ -41,16 +51,16 @@ const investorSchema = new mongoose.Schema(
       type: String,
       maxlength: [500, "Bio cannot exceed 500 characters"]
     },
-    website: {
-      type: String,
-      trim: true,
-      match: [/^https?:\/\/.+/, "Website must be a valid URL starting with http or https"],
-    },
-    linkedin: {
-      type: String,
-      trim: true,
-      match: [/^https?:\/\/(www\.)?linkedin\.com\/.+/, "LinkedIn must be a valid LinkedIn URL"],
-    },
+    // website: {
+    //   type: String,
+    //   trim: true,
+    //   match: [/^https?:\/\/.+/, "Website must be a valid URL starting with http or https"],
+    // },
+    // linkedin: {
+    //   type: String,
+    //   trim: true,
+    //   match: [/^https?:\/\/(www\.)?linkedin\.com\/.+/, "LinkedIn must be a valid LinkedIn URL"],
+    // },
     savedEntrepreneurs: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "User"

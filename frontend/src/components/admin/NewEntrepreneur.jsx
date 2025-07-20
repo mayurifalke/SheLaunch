@@ -14,6 +14,7 @@ import { Buffer } from 'buffer';
 import Form from 'react-bootstrap/Form';
 
 
+
 const columns = [
   { id: 'sr', label: 'Sr. No.', minWidth: 50 },
   { id: 'name', label: 'Name', minWidth: 150 },
@@ -47,10 +48,11 @@ export default function NewEntrepreneur() {
         const res = await axios.get('/api/admin/pending-entrepreneurs', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log(res.data);
-        setRows(res.data.pendingUsers);
+        // console.log(res.data);
+        setRows(res.data.pendingUsers || []);
       } catch (error) {
-        console.error(error);
+        // console.error(error);
+        setRows([]);
         toast.error('Failed to fetch entrepreneurs');
       }
     };
@@ -93,7 +95,7 @@ const handleCloseDoc = () => {
     setRows(rows.filter(u => u._id !== selectedEntrepreneur._id));
   } catch (err) {
     console.error(err);
-    toast.error("Failed to approve entrepreneur");
+    toast.error("Failed to approve entrepreneur");  
   }
 };
 
@@ -168,7 +170,7 @@ const submitDisapprove = async () => {
 
   return (
     <div className="container mt-5">
-      <h4 className="p-3 mb-1">New Entrepreneurs List</h4>
+      <h3 className="p-3 mb-1">New Entrepreneurs List</h3>
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeButton />
 
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
@@ -180,7 +182,7 @@ const submitDisapprove = async () => {
                   <TableCell
                     key={column.id}
                     align={column.align || 'left'}
-                    style={{ minWidth: column.minWidth }}
+                    style={{ minWidth: column.minWidth, fontWeight: 'bold', backgroundColor: 'rgba(184, 176, 176, 0.8)',fontSize: '0.9rem' }}
                   >
                     {column.label}
                   </TableCell>

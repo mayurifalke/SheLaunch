@@ -22,11 +22,12 @@ const columns = [
   { id: 'action', label: 'Action', minWidth: 60 },
 ];
 
-export default function NewInvestor() {
+export default function AllEntrepreneur() {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [showModal, setShowModal] = useState(false);
+   const [showModal2, setShowModal2] = useState(false);
   const [selectedEntrepreneur, setSelectedEntrepreneur] = useState(null);
 
   const handleChangePage = (event, newPage) => setPage(newPage);
@@ -36,33 +37,72 @@ export default function NewInvestor() {
   };
 
   // Fetch entrepreneurs from API
-useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    toast.error("Authorization token not found.");
-    return;
-  }
-  const fetchInvestors = async () => {
-    try {
-      const res = await axios.get('/api/admin/pending-investors', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log(res.data);
-      setRows(res.data.pendingInvestors  || []); 
-    } catch (error) {
-      // console.error(error);
-      toast.error('Failed to fetch entrepreneurs');
-      setRows([]); 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Authorization token not found.");
+      return;
     }
-  };
-  fetchInvestors();
-}, []);
-
+    const fetchEntrepreneurs = async () => {
+      try {
+        const res = await axios.get('/api/admin/browse-pitches', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        // console.log(res.data);
+        setRows(res.data.entrepreneurs || []);
+      } catch (error) {
+        // console.error(error);
+        setRows([]);
+        toast.error('Failed to fetch entrepreneurs');
+      }
+    };
+    fetchEntrepreneurs();
+  }, []);
 
   const handleView = (entrepreneur) => {
     setSelectedEntrepreneur(entrepreneur);
     setShowModal(true);
   };
+
+   const handleView2 = (entrepreneur) => {
+    setSelectedEntrepreneur(entrepreneur);
+    setShowModal2(true);
+  };
+const handleDelete = async () => {
+  if (!selectedEntrepreneur || !selectedEntrepreneur._id) {
+    toast.error("Entrepreneur ID not found.");
+    return;
+  }
+
+  // if (!window.confirm("Are you sure you want to delete this entrepreneur? This action cannot be undone.")) {
+  //   return;
+  // }
+
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Authorization token not found.");
+      return;
+    }
+
+    const res = await axios.delete(`/api/admin/delete-entrepreneur/${selectedEntrepreneur._id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    toast.success(res.data.message || "Entrepreneur deleted successfully.");
+
+    // Update your state to remove the deleted entrepreneur from table immediately
+    setRows(rows.filter(e => e._id !== selectedEntrepreneur._id));
+
+    // Close modal
+    setShowModal2(false);
+  } catch (error) {
+    // console.error(error);
+    toast.error("Failed to delete entrepreneur.");
+  }
+};
+
+
   // State to manage enlarged image
 const [showDocModal, setShowDocModal] = useState(false);
 const [selectedDoc, setSelectedDoc] = useState(null);
@@ -82,7 +122,7 @@ const handleCloseDoc = () => {
   try {
     const token = localStorage.getItem("token");
     await axios.put(
-      `/api/admin/verify-investor/${selectedEntrepreneur._id}`,
+      `/api/admin/verify-entrepreneur/${selectedEntrepreneur._id}`,
       { status: "Approved" }, // ✅ send status explicitly
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -94,7 +134,7 @@ const handleCloseDoc = () => {
     // Remove approved user from pending list immediately
     setRows(rows.filter(u => u._id !== selectedEntrepreneur._id));
   } catch (err) {
-    console.error(err);
+    // console.error(err);
     toast.error("Failed to approve entrepreneur");
   }
 };
@@ -151,7 +191,7 @@ const submitDisapprove = async () => {
   try {
     const token = localStorage.getItem("token");
     await axios.put(
-      `/api/admin/verify-investor/${selectedEntrepreneur._id}`,
+      `/api/admin/verify-entrepreneur/${selectedEntrepreneur._id}`,
       { status: "Rejected", rejectionReason }, // ✅ send rejection reason
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -162,7 +202,7 @@ const submitDisapprove = async () => {
     setRows(rows.filter(u => u._id !== selectedEntrepreneur._id));
     setRejectionReason(""); // reset input
   } catch (err) {
-    console.error(err);
+    // console.error(err);
     toast.error("Failed to disapprove entrepreneur");
   }
 };
@@ -170,7 +210,7 @@ const submitDisapprove = async () => {
 
   return (
     <div className="container mt-5">
-      <h4 className="p-3 mb-1">New Entrepreneurs List</h4>
+      <h4 className="p-3 mb-1">All Entrepreneurs List</h4>
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeButton />
 
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
@@ -202,7 +242,7 @@ const submitDisapprove = async () => {
                       );
                     } else if (column.id === 'action') {
                       return (
-                        <TableCell key="action" align="left">
+                        <TableCell key="action" align="left" style={{gap: '10px', display: 'flex'}}>
                          <button
   onClick={() => handleView(row)}
   style={{
@@ -217,6 +257,21 @@ const submitDisapprove = async () => {
   }}
 >
    View
+</button>
+<button
+  onClick={() => handleView2(row)}
+  style={{
+    background: "linear-gradient(45deg, #b41815ff, #ee390bff)",
+    color: "white",
+    border: "none",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+  }}
+>
+   Delete
 </button>
 
 
@@ -301,9 +356,9 @@ const submitDisapprove = async () => {
         )}
       </Modal.Body>
       <Modal.Footer className="justify-content-between">
-        <Button variant="success" onClick={handleApprove}>
+        {/* <Button variant="success" onClick={handleApprove}>
   Approve
-</Button>
+</Button> */}
 <Button variant="danger" onClick={handleDisapprove}>
   Disapprove
 </Button>
@@ -337,6 +392,28 @@ const submitDisapprove = async () => {
     </Button>
     <Button variant="danger" onClick={submitDisapprove}>
       Disapprove
+    </Button>
+  </Modal.Footer>
+</Modal>
+
+{/* Modal for delete */}
+<Modal show={showModal2} onHide={() => setShowModal2(false)} centered>
+  <Modal.Header closeButton>
+    <Modal.Title>Delete Entrepreneur</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <div className="mb-3">
+      <label htmlFor="rejectionReason" className="form-label fw-bold">
+       Are you sure you want to delete this entrepreneur?
+      </label>
+    </div>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowModal2(false)}>
+      Cancel
+    </Button>
+    <Button variant="danger" onClick={handleDelete}>
+      Delete
     </Button>
   </Modal.Footer>
 </Modal>

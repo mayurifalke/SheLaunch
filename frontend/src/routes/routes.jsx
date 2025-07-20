@@ -30,6 +30,8 @@ import AdminLayout from "../layouts/AdminLayout";
 import MainAdminDashboard from "../components/admin/MainAdminDashboard";
 import NewEntrepreneur from "../components/admin/NewEntrepreneur";
 import NewInvestor from "../components/admin/NewInvestor";
+import AllEntrepreneur from "../components/admin/AllEntrepreneur";
+import AllInvesotrs from "../components/admin/AllInvesotrs";
 
 const VITE_ENCRYPTION_KEY = "SheLaunch"; // ❗ Move to .env in production
 
@@ -244,6 +246,18 @@ const AppRoutes = () => {
             path="newuser"
             element={
               <UserRoleRoute role="admin" component={<NewEntrepreneur />} />
+            }
+          />
+          <Route
+            path="allentrepreneurs"
+            element={
+              <UserRoleRoute role="admin" component={<AllEntrepreneur/>} />
+            }
+          />
+          <Route
+            path="allinvestors"
+            element={
+              <UserRoleRoute role="admin" component={<AllInvesotrs/>} />
             }
           />
           <Route

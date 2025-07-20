@@ -2,38 +2,50 @@ const Entrepreneur = require("../models/userModel");
 const Investor = require("../models/investorModel");
 
 exports.RegisterInvestor = async (req, res) => {
-  try{
-    const {name,email,password,contactno,company,categories,investmentRange,location,bio,website,linkedin} = req.body;
+  try {
+    const {
+      name,
+      email,
+      password,
+      contactno,
+      categories,
+      minInvestment,
+      maxInvestment,
+    } = req.body;
 
-    if(!name || !email || !password || !contactno || !company || !categories || !investmentRange || !location || !bio || !website || !linkedin) {
-      return res.status(400).json({message: "Please fill all the required fields"});
+    // ✅ Check required fields based on schema
+    if (
+      !name || !email || !password || !contactno || !categories || !minInvestment || !maxInvestment ) {
+      return res.status(400).json({ message: "Please fill all the required fields" });
     }
 
-    //check if user already exists
-    const existingInvestor = await Investor.find({ email });
-    if(existingInvestor.length > 0) {
-      return res.status(400).json({message: "Investor already exists"});
+    // ✅ Check if user already exists
+    const existingInvestor = await Investor.findOne({ email });
+    if (existingInvestor) {
+      return res.status(400).json({ message: "Investor already exists" });
     }
 
-    //create new user
+    // ✅ Create new investor user
     const newInvestor = new Investor({
       name,
       email,
       password,
       contactno,
-      company,
+      // company,
       categories,
-      investmentRange,
-      location,
-      bio,
-      website,
-      linkedin,
+      minInvestment,
+      maxInvestment,
+      // location,
+      // bio,
+      // website,
+      // linkedin,
       status: "Pending", // default status
       role: "investor", // default role
     });
-      await newInvestor.save();
 
-    res.status(201).json({ message: "User registered successfully", user: newInvestor });
+    await newInvestor.save();
+
+    res.status(201).json({ message: "Investor registered successfully", user: newInvestor });
   }
   catch (err) {
     console.error(err);

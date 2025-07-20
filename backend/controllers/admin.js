@@ -97,8 +97,15 @@ exports.verifyEntrepreneur = async (req, res) => {
     const entrepreneur = await Entrepreneur.findById(req.params.id);
     if (!entrepreneur) return res.status(404).json({ message: "Entrepreneur not found" });
 
-    entrepreneur.status = status;
-    entrepreneur.rejectionReason = status === "Rejected" ? rejectionReason : "";
+  
+    if (entrepreneur.status === "Approved" && status === "Rejected") {
+      entrepreneur.status = "Rejected";
+      entrepreneur.rejectionReason = rejectionReason || "";
+    } else {
+      entrepreneur.status = status;
+      entrepreneur.rejectionReason = status === "Rejected" ? rejectionReason : "";
+    }
+
     await entrepreneur.save();
 
     res.status(200).json({ message: `Entrepreneur ${status} successfully`, entrepreneur });
@@ -107,6 +114,7 @@ exports.verifyEntrepreneur = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 
 //Approve or reject an Investor
@@ -125,6 +133,80 @@ exports.verifyInvestor = async (req, res) => {
   } catch (error) {
     console.error("Error verifying investor:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.getAllEntrepreneurPitches = async (req, res) => {
+  try {
+    // Fetch all entrepreneurs where status is approved (optional filter)
+    const entrepreneurs = await Entrepreneur.find({ status: "Approved" }); 
+
+    res.status(200).json({
+      message: "Fetched all entrepreneur pitches successfully",
+      count: entrepreneurs.length,
+      entrepreneurs,
+    });
+  } catch (error) {
+    console.error("Error fetching entrepreneur pitches:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+exports.getAllInvesotrs = async (req, res) => {
+  try {
+    // Fetch all entrepreneurs where status is approved (optional filter)
+    const investors = await Investor.find(); 
+
+    res.status(200).json({
+      message: "Fetched all invesotrs successfully",
+      count: investors.length,
+      investors,
+    });
+  } catch (error) {
+    console.error("Error fetching invesotrs pitches:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+
+
+// api to delete the entrepreneur
+exports.deleteEntrepreneur = async (req, res) => {
+  try {
+    const entrepreneurId = req.params.id;
+
+    const entrepreneur = await Entrepreneur.findByIdAndDelete(entrepreneurId);
+
+    if (!entrepreneur) {
+      return res.status(404).json({ message: "Entrepreneur not found" });
+    }
+
+    res.status(200).json({
+      message: "Entrepreneur deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting entrepreneur:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// api to delete the investor
+exports.deleteInvestor = async (req, res) => {
+  try {
+    const investorId = req.params.id;
+
+    const investor = await Investor.findByIdAndDelete(investorId);
+
+    if (!investor) {
+      return res.status(404).json({ message: "investor not found" });
+    }
+
+    res.status(200).json({
+      message: "investor deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting investor:", error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 

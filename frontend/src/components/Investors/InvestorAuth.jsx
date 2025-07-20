@@ -3,14 +3,15 @@ import { Modal, Form, Button } from "react-bootstrap";
 import "./Investor.css";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const InvestorAuthModal = ({ show, handleClose }) => {
   const [signupData, setSignupData] = useState({
     name: "",
     email: "",
     password: "",
-    contact: "",
-    interestCategories: "",
+    contactno: "",
+    categories: "",
     minInvestment: "",
     maxInvestment: "",
   });
@@ -19,13 +20,30 @@ const InvestorAuthModal = ({ show, handleClose }) => {
     setSignupData({ ...signupData, [e.target.name]: e.target.value });
   };
 
-  const handleSignupSubmit = (e) => {
-    e.preventDefault();
-    console.log("Investor SignUp Data:", signupData);
-    // Add API call here if needed
+const handleSignupSubmit = async (e) => {
+  e.preventDefault();
+  console.log("Investor SignUp Data:", signupData);
+
+  try {
+    const res = await axios.post("/api/investors/register-investor", signupData);
+    
+    console.log("API Response:", res.data);
+
     Swal.fire("Success", "Sign up completed!", "success");
+    setSignupData({name: "",
+    email: "",
+    password: "",
+    contactno: "",
+    categories: "",
+    minInvestment: "",
+    maxInvestment: "",});
     handleClose();
-  };
+
+  } catch (error) {
+    console.error("API Error:", error);
+    Swal.fire("Error", error.response?.data?.message || "Registration failed", "error");
+  }
+};
 
   return (
     <Modal
@@ -76,9 +94,9 @@ const InvestorAuthModal = ({ show, handleClose }) => {
           <Form.Group className="mb-3">
             <Form.Control
               type="text"
-              name="contact"
+              name="contactno"
               placeholder="Contact Number"
-              value={signupData.contact}
+              value={signupData.contactno}
               onChange={handleSignupChange}
               required
             />
@@ -86,8 +104,8 @@ const InvestorAuthModal = ({ show, handleClose }) => {
 
           <Form.Group className="mb-3">
             <Form.Select
-              name="interestCategories"
-              value={signupData.interestCategories}
+              name="categories"
+              value={signupData.categories}
               onChange={handleSignupChange}
               required
             >

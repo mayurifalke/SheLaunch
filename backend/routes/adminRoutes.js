@@ -28,6 +28,19 @@ router.put("/verify-entrepreneur/:id", isAdminLoggedIn, authorizeRole("admin"), 
 // api to approve investor
 router.put("/verify-investor/:id", isAdminLoggedIn, authorizeRole("admin"), adminController.verifyInvestor);
 
+// Browse all entrepreneurs
+router.get("/browse-pitches",isAdminLoggedIn, adminController.getAllEntrepreneurPitches);
+
+//to delete
+router.delete("/delete-entrepreneur/:id", isAdminLoggedIn, authorizeRole("admin"), adminController.deleteEntrepreneur);
+
+// to delete investor
+router.delete("/delete-investor/:id", isAdminLoggedIn, authorizeRole("admin"), adminController.deleteInvestor);
+
+// api to get all INVESTORS
+router.get("/all-investors", isAdminLoggedIn, adminController.getAllInvesotrs);
+
+
 
 
 module.exports = router;

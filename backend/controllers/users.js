@@ -7,103 +7,61 @@ const Admin = require("../models/adminModel");
 
 exports.RegisterUser = async (req, res) => {
   try {
-    
     const {
       name,
       email,
       password,
       contactno,
       education,
-      linkdinurl,
-      experience,
       bio,
       startupname,
-      industry,
-      vision,
-      description,
-      websiteurl,
       fundinggoal,
-      raisedfunds,
-      investmentTypes,
-      useoffunds,
-      pitchdeckurl,
-      videourl,
     } = req.body;
 
     const existingUser = await User.findOne({ email });
-if(existingUser) {
-  return res.status(400).json({ message: "User already exists with this email" });
-}
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists with this email" });
+    }
 
+    // handle uploaded image
+    let profileImage = undefined;
+    if (req.file) {
+      profileImage = {
+        data: req.file.buffer,
+        contentType: req.file.mimetype,
+      };
+    } else {
+      return res.status(400).json({ message: "Profile image is required" });
+    }
 
-    // Validate required fields...
-
-    // Prepare file data
-    const files = req.files;
-
+    // create user
     const newUser = new User({
       name,
       email,
       password,
       contactno,
       education,
-      linkdinurl,
-      experience,
       bio,
       startupname,
-      industry,
-      vision,
-      description,
-      websiteurl,
       fundinggoal,
-      raisedfunds: raisedfunds || 0,
-      investmentTypes: JSON.parse(investmentTypes || "[]"),
-      useoffunds,
-      pitchdeckurl,
-      videourl: videourl || "",
-
-      // Convert files to schema format
-      businessLicense: files.businessLicense
-        ? {
-            data: files.businessLicense[0].buffer,
-            contentType: files.businessLicense[0].mimetype,
-          }
-        : undefined,
-
-      aadhaarPan: files.aadhaarPan
-        ? {
-            data: files.aadhaarPan[0].buffer,
-            contentType: files.aadhaarPan[0].mimetype,
-          }
-        : undefined,
-
-      startupCertificate: files.startupCertificate
-        ? {
-            data: files.startupCertificate[0].buffer,
-            contentType: files.startupCertificate[0].mimetype,
-          }
-        : undefined,
-
-      otherDocs: files.otherDocs
-        ? files.otherDocs.map((file) => ({
-            data: file.buffer,
-            contentType: file.mimetype,
-          }))
-        : [],
+      profileImage,
     });
 
     await newUser.save();
 
     res.status(201).json({
       message: "User registered successfully",
-      user: newUser,
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+      }
     });
   } catch (err) {
     console.error("Error in RegisterUser:", err);
     res.status(500).json({ message: "Server Error", error: err.message });
   }
 };
-
 
 
 
@@ -149,9 +107,9 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid email/contact or password" });
     }
 
-    if (role !== "admin" && user.status !== "Approved") {
-      return res.status(403).json({ message: "Your account is not approved by admin yet." });
-    }
+    // if (role === "entrepreneur"  && user.status !== "Approved") {
+    //   return res.status(403).json({ message: "Your account is not approved by admin yet." });
+    // }
 
     const tokenPayload = {
       id: user._id,
@@ -345,4 +303,6 @@ exports.removeSavedInvestor = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };  
+
+
 

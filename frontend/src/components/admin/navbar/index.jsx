@@ -56,12 +56,13 @@ export const Navbar = () => {
         }}
       >
         <Box display="flex" alignItems="center" gap={2}>
-          <IconButton
-            sx={{ display: `${isMdDevices ? "flex" : "none"}`, color: "#a754e6" }}
-             onClick={() => setToggled(true)} // Updated here to open sidebar
-          >
-            <MenuOutlined />
-          </IconButton>
+        <IconButton
+  sx={{ display: `${isMdDevices ? "flex" : "none"}`, color: "#a754e6" }}
+  onClick={() => setToggled((prev) => !prev)} // <-- Toggling instead of forcing open
+>
+  <MenuOutlined />
+</IconButton>
+
         </Box>
 
         <Box position="relative" className="profile-dropdown">

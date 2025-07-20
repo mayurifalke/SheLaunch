@@ -8,12 +8,7 @@ const { authorizeRole } = require("../middleware/authenticateRole");
 // api to register the user
 router.post(
   "/register-user",
-  upload.fields([
-    { name: "businessLicense", maxCount: 1 },
-    { name: "aadhaarPan", maxCount: 1 },
-    { name: "startupCertificate", maxCount: 1 },
-    { name: "otherDocs" }, // multiple allowed
-  ]),
+  upload.single("profileImage"),  // field name must match frontend FormData key
   usersController.RegisterUser
 );
 
@@ -37,4 +32,8 @@ router.get("/get-saved-investors", isUserLoggedIn, usersController.getSavedInves
 
 //to delete the investor from savedInvestors array
 router.post("/remove-saved-investor", isUserLoggedIn, authorizeRole("user"), usersController.removeSavedInvestor);
+
+
+
+
 module.exports = router;
