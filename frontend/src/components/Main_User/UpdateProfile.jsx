@@ -556,30 +556,30 @@ const UpdateProfile = () => {
                   />
                 </Form.Group>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Other Docs</Form.Label>
-                  {preview.otherDocs && preview.otherDocs.length > 0 && (
-                    <div className="mb-2 d-flex flex-wrap gap-2">
-                      {preview.otherDocs.map((url, idx) => (
-                        <Image
-                          key={idx}
-                          src={url}
-                          alt={`Other Document ${idx + 1}`}
-                          thumbnail
-                          width={200}
-                        />
-                      ))}
-                      
-                    </div>
-                  )}
+                  {/* <Form.Group className="mb-3">
+                    <Form.Label>Other Docs</Form.Label>
+                    {preview.otherDocs && preview.otherDocs.length > 0 && (
+                      <div className="mb-2 d-flex flex-wrap gap-2">
+                        {preview.otherDocs.map((url, idx) => (
+                          <Image
+                            key={idx}
+                            src={url}
+                            alt={`Other Document ${idx + 1}`}
+                            thumbnail
+                            width={200}
+                          />
+                        ))}
+                        
+                      </div>
+                    )}
 
-                  <Form.Control
-                    type="file"
-                    name="otherDocs"
-                    onChange={handleChange}
-                    multiple
-                  />
-                </Form.Group>
+                    <Form.Control
+                      type="file"
+                      name="otherDocs"
+                      onChange={handleChange}
+                      multiple
+                    />
+                  </Form.Group> */}
               </Tab>
             </Tabs>
 

@@ -116,7 +116,7 @@ export default function AllInvesotrs() {
                   <TableCell
                     key={column.id}
                     align={column.align || 'left'}
-                    style={{ minWidth: column.minWidth }}
+                     style={{ minWidth: column.minWidth, fontWeight: 'bold', backgroundColor: 'rgba(184, 176, 176, 0.8)',fontSize: '0.9rem' }}
                   >
                     {column.label}
                   </TableCell>

@@ -145,7 +145,7 @@ const userSchema = new mongoose.Schema(
       data: { type: Buffer },
       contentType: { type: String },
     },
-    aadhaarPan: {
+    aadharPan: {
       data: { type: Buffer },
       contentType: { type: String },
     },

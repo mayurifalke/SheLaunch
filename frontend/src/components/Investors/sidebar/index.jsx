@@ -52,8 +52,8 @@ export const SideBar = () => {
   };
 
   return (
-    <Sidebar
-      backgroundColor="#000" // black background
+     <Sidebar
+      backgroundColor="rgba(18, 18, 18, 0.8)" // black background
       rootStyles={{ border: 0, height: "100%" }}
       collapsed={collapsed}
       onBackdropClick={() => setToggled(false)}
@@ -155,10 +155,11 @@ export const SideBar = () => {
           }}
         >
           <Box
-            sx={{
+             sx={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              marginTop: "1rem",
             }}
           >
             {!collapsed && (
@@ -177,7 +178,7 @@ export const SideBar = () => {
                   variant="h4"
                   fontWeight="bold"
                   textTransform="capitalize"
-                  color={colors.greenAccent[500]}
+                  color="#a754e6"
                 >
                   She Launch
                 </Typography>

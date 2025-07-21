@@ -349,63 +349,107 @@ exports.removeSavedInvestor = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const userId = req.user.id; // from JWT
-
-    // Validate incoming data (basic example)
+    const userId = req.user.id;
     if (!userId) {
-      return res
-        .status(400)
-        .json({ message: "User ID is missing in request." });
+      return res.status(400).json({ message: "User ID missing" });
     }
 
-    const updatedData = req.body;
-
-    // Optional: check required fields (e.g., name, email)
-    if (
-      !updatedData.name ||
-      !updatedData.email ||
-      !updatedData.contactno ||
-      !updatedData.education ||
-      !updatedData.bio ||
-      !updatedData.startupname ||
-      !updatedData.fundinggoal
-    ) {
-      return res.status(400).json({ message: "Required fields are missing." });
+    const entrepreneur = await Entrepreneur.findById(userId);
+    if (!entrepreneur) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // Find and update the entrepreneur profile
-    const updated = await Entrepreneur.findOneAndUpdate(
-      { user: userId },
+    // Update only provided fields
+    const updatedData = { ...req.body };
+
+    if (updatedData.investmentTypes) {
+      updatedData.investmentTypes = JSON.parse(updatedData.investmentTypes);
+    }
+
+    if (updatedData.otherDocs) {
+      updatedData.otherDocs = JSON.parse(updatedData.otherDocs);
+    }
+
+    // Validate required fields only
+    const requiredFields = [
+      "name",
+      "email",
+      "contactno",
+      "education",
+      "bio",
+      "startupname",
+      "fundinggoal",
+    ];
+    for (const field of requiredFields) {
+      if (!updatedData[field]) {
+        return res.status(400).json({ message: `Field '${field}' is required` });
+      }
+    }
+
+    // If new files are uploaded, replace or merge accordingly
+    if (req.files.businessLicense?.[0]) {
+      updatedData.businessLicense = {
+        data: req.files.businessLicense[0].buffer,
+        contentType: req.files.businessLicense[0].mimetype,
+      };
+    } else {
+      updatedData.businessLicense = entrepreneur.businessLicense;
+    }
+
+    if (req.files.aadharPan?.[0]) {
+      updatedData.aadharPan = {
+        data: req.files.aadharPan[0].buffer,
+        contentType: req.files.aadharPan[0].mimetype,
+      };
+    } else {
+      updatedData.aadharPan = entrepreneur.aadharPan;
+    }
+
+    if (req.files.startupCertificate?.[0]) {
+      updatedData.startupCertificate = {
+        data: req.files.startupCertificate[0].buffer,
+        contentType: req.files.startupCertificate[0].mimetype,
+      };
+    } else {
+      updatedData.startupCertificate = entrepreneur.startupCertificate;
+    }
+
+    // For otherDocs, merge previous with newly uploaded files
+    if (req.files.otherDocs?.length) {
+      const newDocs = req.files.otherDocs.map((file) => ({
+        data: file.buffer,
+        contentType: file.mimetype,
+      }));
+      updatedData.otherDocs = [
+        ...(entrepreneur.otherDocs || []),
+        ...newDocs,
+      ];
+    } else {
+      updatedData.otherDocs = entrepreneur.otherDocs;
+    }
+
+    // Now update
+    const updated = await Entrepreneur.findByIdAndUpdate(
+      userId,
       updatedData,
       { new: true, runValidators: true }
     );
-
-    if (!updated) {
-      return res
-        .status(404)
-        .json({ message: "Entrepreneur profile not found." });
-    }
 
     res.json({
       message: "Profile updated successfully",
       entrepreneur: updated,
     });
   } catch (err) {
-    console.error("Error while updating entrepreneur profile:", err);
-
-    // Handle Mongoose validation errors
+    console.error("Update error:", err);
     if (err.name === "ValidationError") {
-      const messages = Object.values(err.errors).map((val) => val.message);
+      const messages = Object.values(err.errors).map((e) => e.message);
       return res
         .status(400)
         .json({ message: "Validation error", errors: messages });
     }
-
-    // Handle cast errors (bad IDs)
-    if (err.name === "CastError") {
-      return res.status(400).json({ message: "Invalid ID format" });
-    }
-
     res.status(500).json({ message: "Server error while updating profile" });
   }
 };
+
+
+
