@@ -15,7 +15,7 @@ import InvestorDashboard from "../components/Investors/InvestorDashboard";
 import InvestorAuth from "../components/Investors/InvestorAuth";
 import EnterpreneurLayout from "../layouts/EnterpreneurLayout";
 import MainUserDashboard from "../components/Main_User/MainUserDashboard";
-import EntrepreneurProfile from "../components/Main_User/EntrepreneurProfile";
+import UpdateProfile from "../components/Main_User/UpdateProfile";
 import StartupStatus from "../components/Main_User/StartupStatus";
 import SavedInvestors from "../components/Main_User/SavedInvestors";
 import SavedMentors from "../components/Main_User/SavedMentors";
@@ -197,11 +197,11 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path="profile"
+            path="update-profile"
             element={
               <UserRoleRoute
                 role="entrepreneur"
-                component={<EntrepreneurProfile />}
+                component={<UpdateProfile />}
               />
             }
           />

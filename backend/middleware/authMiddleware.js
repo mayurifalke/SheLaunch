@@ -24,7 +24,7 @@ const isUserLoggedIn = async (req, res, next) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    req.user = decoded; // Attach user data to request object
+    req.user = user; // Attach user data to request object
     next();
 
   } catch (error) {

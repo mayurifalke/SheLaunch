@@ -10,7 +10,7 @@ import { FaEye } from "react-icons/fa";
 import { AiOutlineLogout } from "react-icons/ai";
 import { ToggledContext } from "../../../layouts/EnterpreneurLayout";
 import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Modal } from "react-bootstrap";
 import axios from "axios";
 
@@ -300,7 +300,7 @@ export const Navbar = () => {
                 gap: "12px",
               }}
             >
-              <button className="btn btn-primary btn-md">Update Profile</button>
+              <Link to="/entrepreneur/update-profile" className="btn btn-primary btn-md" onClick={() => setShowModal(false)}>Update Profile</Link>
               <button
                 className="btn btn-outline-secondary btn-md"
                 onClick={() => setShowModal(false)}

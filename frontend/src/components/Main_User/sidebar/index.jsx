@@ -188,8 +188,8 @@ export const SideBar = () => {
           }}
         >
           <Item
-            title="Profile"
-            path="/entrepreneur/profile"
+            title="Update Profile"
+            path="/entrepreneur/update-profile"
             icon={<MdOutlineBusiness />}
             collapsed={collapsed}
           />

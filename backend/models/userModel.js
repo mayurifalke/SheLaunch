@@ -72,6 +72,11 @@ const userSchema = new mongoose.Schema(
       // required: [true, "Industry is required"],
       maxlength: [100, "Industry cannot exceed 100 characters"],
     },
+    startupStage: {
+      type: String,
+      enum: ["Idea", "MVP", "Revenue-generating"],
+      default: "Idea",
+    },
     vision: {
       type: String,
       // required: [true, "Vision is required"],
@@ -114,12 +119,7 @@ const userSchema = new mongoose.Schema(
     ],
     investmentTypes: {
       type: [String],
-      validate: {
-        validator: function (arr) {
-          return Array.isArray(arr) && arr.every((s) => typeof s === "string");
-        },
-        message: "Investment types must be an array of strings",
-      },
+      default: [],
     },
     useoffunds: {
       type: String,
@@ -159,10 +159,17 @@ const userSchema = new mongoose.Schema(
         contentType: String,
       },
     ],
+    teamSize: {
+      type: Number,
+      // required: true,
+      min: [1, "Team size must be at least 1"],
+      max: [100, "Team size cannot exceed 100"],
+      default: 1,
+    },
     role: {
       type: String,
-      default: "user",
-      enum: ["user"],
+      default: "entrepreneur",
+      enum: ["entrepreneur"],
     },
     status: {
       type: String,
