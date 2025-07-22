@@ -11,6 +11,7 @@ import {
   Tabs,
   Tab,
   Alert,
+  ProgressBar,
 } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -47,12 +48,14 @@ const UpdateProfile = () => {
     otherDocs: [],
   });
   const [preview, setPreview] = useState({
+    profileImage: "",
     businessLicense: "",
     aadharPan: "",
     startupCertificate: "",
     otherDocs: [],
   });
   const [errors, setErrors] = useState("");
+
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
 
@@ -90,7 +93,10 @@ const UpdateProfile = () => {
         }
       }
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
   };
 
@@ -104,7 +110,6 @@ const UpdateProfile = () => {
         const value = formData[key];
 
         if (Array.isArray(value)) {
-          // Append as JSON string so backend can parse
           fd.append(key, JSON.stringify(value));
         } else if (value instanceof File || value instanceof Blob) {
           fd.append(key, value);
@@ -176,61 +181,102 @@ const UpdateProfile = () => {
             useoffunds: data.useoffunds || "",
             pitchdeckurl: data.pitchdeckurl || "",
             videourl: data.videourl || "",
-            businessLicense: null,
-            aadharPan: null,
-            startupCertificate: null,
             otherDocs: [],
+            businessLicense: data.businessLicense || null,
+            aadharPan: data.aadharPan || null,
+            startupCertificate: data.startupCertificate || null,
           }));
 
-          // Convert binary data to base64 urls
-          // const makeBase64 = (fileObj) => {
-          //   if (fileObj && fileObj.data && fileObj.contentType) {
-          //     const base64String = btoa(
-          //       new Uint8Array(fileObj.data.data).reduce(
-          //         (data, byte) => data + String.fromCharCode(byte),
-          //         ""
-          //       )
-          //     );
-          //     return `data:${fileObj.contentType};base64,${base64String}`;
-          //   }
-          //   return "";
-          // };
-
-          // setPreview({
-          //   businessLicense: makeBase64(data.businessLicense),
-          //   aadharPan: makeBase64(data.aadhaarPan),
-          //   startupCertificate: makeBase64(data.startupCertificate),
-          //   otherDocs: data.otherDocs ? data.otherDocs.map(makeBase64) : [],
-          // });
           const makeBase64 = (fileObj) => {
-          try {
-            if (fileObj && fileObj.data && fileObj.contentType) {
-              const binary = new Uint8Array(fileObj.data.data).reduce(
-                (data, byte) => data + String.fromCharCode(byte),
-                ""
-              );
-              return `data:${fileObj.contentType};base64,${btoa(binary)}`;
+            try {
+              if (fileObj && fileObj.data && fileObj.contentType) {
+                const binary = new Uint8Array(fileObj.data.data).reduce(
+                  (data, byte) => data + String.fromCharCode(byte),
+                  ""
+                );
+                return `data:${fileObj.contentType};base64,${btoa(binary)}`;
+              }
+            } catch (e) {
+              console.error("Failed to convert file to base64:", e);
             }
-          } catch (e) {
-            console.error("Failed to convert file to base64:", e);
-          }
-          return "";
-        };
+            return "";
+          };
 
-        setPreview({
-          businessLicense: makeBase64(data.businessLicense),
-          aadharPan: makeBase64(data.aadharPan), // check exact key spelling
-          startupCertificate: makeBase64(data.startupCertificate),
-          otherDocs: Array.isArray(data.otherDocs)
-            ? data.otherDocs.map(makeBase64).filter(Boolean)
-            : [],
-        });
+          setPreview({
+            businessLicense: makeBase64(data.businessLicense),
+            aadharPan: makeBase64(data.aadharPan),
+            startupCertificate: makeBase64(data.startupCertificate),
+            profileImage: makeBase64(data.profileImage), // <-- new
+            otherDocs: Array.isArray(data.otherDocs)
+              ? data.otherDocs.map(makeBase64).filter(Boolean)
+              : [],
+          });
         })
         .catch((error) => {
           console.error("Failed to load profile:", error);
         });
     }
   }, []);
+
+  const calculateProfileCompletion = () => {
+    const requiredFields = [
+      "name",
+      "email",
+      "contactno",
+      "linkdinurl",
+      "education",
+      "experience",
+      "bio",
+      "startupname",
+      "industry",
+      "startupStage",
+      "description",
+      "vision",
+      "websiteurl",
+      "teamSize",
+      "fundinggoal",
+      "investmentTypes",
+      "raisedfunds",
+      "useoffunds",
+      "pitchdeckurl",
+      "videourl",
+      "businessLicense",
+      "aadharPan",
+      "startupCertificate",
+    ];
+
+    let filled = 0;
+
+    requiredFields.forEach((field) => {
+      if (field === "investmentTypes") {
+        if (
+          formData[field] &&
+          Array.isArray(formData[field]) &&
+          formData[field].length > 0
+        ) {
+          filled += 1;
+        }
+      } else if (
+        ["businessLicense", "aadharPan", "startupCertificate"].includes(field)
+      ) {
+        if (
+          formData[field] &&
+          (formData[field] instanceof File ||
+            (typeof formData[field] === "object" &&
+              formData[field].data &&
+              formData[field].contentType))
+        ) {
+          filled += 1;
+        }
+      } else {
+        if (formData[field] && formData[field].toString().trim() !== "") {
+          filled += 1;
+        }
+      }
+    });
+
+    return Math.round((filled / requiredFields.length) * 100);
+  };
 
   return (
     <div className="entrepreneur-profile mt-4">
@@ -249,6 +295,31 @@ const UpdateProfile = () => {
         Update Profile
       </h1>
 
+      <div className="container mb-3">
+        <ProgressBar
+          now={calculateProfileCompletion()}
+          label={`${calculateProfileCompletion()}% Complete`}
+          variant={
+            calculateProfileCompletion() < 40
+              ? "danger"
+              : calculateProfileCompletion() < 80
+              ? "warning"
+              : "success"
+          }
+          striped
+          animated
+          style={{
+            height: "20px", // Increased height
+            borderRadius: "10px", // Rounded corners
+            boxShadow: "0 2px 10px rgba(0,0,0,0.2)", // Soft shadow
+            fontWeight: "bold", // Bold text
+            fontSize: "1rem", // Bigger text
+            backgroundColor: "#e9ecef", // Light grey track
+            overflow: "hidden", // For rounded corners effect
+          }}
+        />
+      </div>
+
       <div className="container mb-6">
         <ToastContainer
           position="top-right"
@@ -256,7 +327,7 @@ const UpdateProfile = () => {
           hideProgressBar={false}
         />
         <Card className="shadow-lg p-4">
-          <Form onSubmit={handleSubmit}>
+          <Form>
             <Tabs
               activeKey={key}
               onSelect={(k) => setKey(k)}
@@ -279,6 +350,27 @@ const UpdateProfile = () => {
                     required
                   />
                 </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Profile Image*</Form.Label>
+                  {preview.profileImage && (
+                    <div className="mb-2">
+                      <Image
+                        src={preview.profileImage}
+                        alt="Profile"
+                        thumbnail
+                        width={200}
+                      />
+                    </div>
+                  )}
+                  <Form.Control
+                    name="profileImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+
                 <Form.Group className="mb-3">
                   <Form.Label>Email*</Form.Label>
                   <Form.Control
@@ -295,6 +387,7 @@ const UpdateProfile = () => {
                   <Form.Control
                     name="contactno"
                     value={formData.contactno}
+                    maxLength={10}
                     onChange={handleChange}
                     required
                   />
@@ -555,31 +648,6 @@ const UpdateProfile = () => {
                     onChange={handleChange}
                   />
                 </Form.Group>
-
-                  {/* <Form.Group className="mb-3">
-                    <Form.Label>Other Docs</Form.Label>
-                    {preview.otherDocs && preview.otherDocs.length > 0 && (
-                      <div className="mb-2 d-flex flex-wrap gap-2">
-                        {preview.otherDocs.map((url, idx) => (
-                          <Image
-                            key={idx}
-                            src={url}
-                            alt={`Other Document ${idx + 1}`}
-                            thumbnail
-                            width={200}
-                          />
-                        ))}
-                        
-                      </div>
-                    )}
-
-                    <Form.Control
-                      type="file"
-                      name="otherDocs"
-                      onChange={handleChange}
-                      multiple
-                    />
-                  </Form.Group> */}
               </Tab>
             </Tabs>
 
@@ -599,7 +667,11 @@ const UpdateProfile = () => {
                     Next
                   </Button>
                 ) : (
-                  <Button type="submit" className="entrepreneur-btn">
+                  <Button
+                    type="button"
+                    className="entrepreneur-btn"
+                    onClick={handleSubmit}
+                  >
                     Update Profile
                   </Button>
                 )}

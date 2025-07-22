@@ -68,6 +68,7 @@ router.put(
     { name: "businessLicense", maxCount: 1 },
     { name: "aadharPan", maxCount: 1 },
     { name: "startupCertificate", maxCount: 1 },
+    { name: "profileImage", maxCount: 1 },
     { name: "otherDocs" },
   ]),
   usersController.updateProfile

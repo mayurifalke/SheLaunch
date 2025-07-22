@@ -33,20 +33,44 @@ exports.RegisterUser = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // check existing user by email
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    // // check existing user by email
+    // const existingUser = await User.findOne({ email });
+    // if (existingUser) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "User already exists with this email" });
+    // }
+
+    // // check existing user by contact number
+    // const existingUserByContact = await User.findOne({ contactno });
+    // if (existingUserByContact) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "User already exists with this contact number" });
+    // }
+
+    const [adminEmail, userEmail, investorEmail] = await Promise.all([
+      Admin.findOne({ email }),
+      User.findOne({ email }),
+      Investor.findOne({ email }),
+    ]);
+
+    if (adminEmail || userEmail || investorEmail) {
       return res
         .status(400)
-        .json({ message: "User already exists with this email" });
+        .json({ message: "Email already in use by another account." });
     }
 
-    // check existing user by contact number
-    const existingUserByContact = await User.findOne({ contactno });
-    if (existingUserByContact) {
+    const [adminContact, userContact, investorContact] = await Promise.all([
+      Admin.findOne({ contactno }),
+      User.findOne({ contactno }),
+      Investor.findOne({ contactno }),
+    ]);
+
+    if (adminContact || userContact || investorContact) {
       return res
         .status(400)
-        .json({ message: "User already exists with this contact number" });
+        .json({ message: "Contact number already in use by another account." });
     }
 
     // check for uploaded image
@@ -370,7 +394,31 @@ exports.updateProfile = async (req, res) => {
       updatedData.otherDocs = JSON.parse(updatedData.otherDocs);
     }
 
-    // Validate required fields only
+    const [adminEmail, userEmail, investorEmail] = await Promise.all([
+      Admin.findOne({ email: updatedData.email }),
+      User.findOne({ email: updatedData.email , _id: { $ne: userId } }),
+      Investor.findOne({ email: updatedData.email }),
+    ]);
+
+    if (adminEmail || userEmail || investorEmail) {
+      return res
+        .status(400)
+        .json({ message: "Email already in use by another account." });
+    }
+
+    const [adminContact, userContact, investorContact] = await Promise.all([
+      Admin.findOne({ contactno: updatedData.contactno }),
+      User.findOne({ contactno: updatedData.contactno, _id: { $ne: userId } }),
+      Investor.findOne({ contactno: updatedData.contactno }),
+    ]);
+
+    if (adminContact || userContact || investorContact) {
+      return res
+        .status(400)
+        .json({ message: "Contact number already in use by another account." });
+    }
+
+    // Validate required fields
     const requiredFields = [
       "name",
       "email",
@@ -382,11 +430,13 @@ exports.updateProfile = async (req, res) => {
     ];
     for (const field of requiredFields) {
       if (!updatedData[field]) {
-        return res.status(400).json({ message: `Field '${field}' is required` });
+        return res
+          .status(400)
+          .json({ message: `Field '${field}' is required` });
       }
     }
 
-    // If new files are uploaded, replace or merge accordingly
+    // Handle uploaded files (keep previous if no new file)
     if (req.files.businessLicense?.[0]) {
       updatedData.businessLicense = {
         data: req.files.businessLicense[0].buffer,
@@ -414,26 +464,32 @@ exports.updateProfile = async (req, res) => {
       updatedData.startupCertificate = entrepreneur.startupCertificate;
     }
 
-    // For otherDocs, merge previous with newly uploaded files
+    // Handle uploaded files (keep previous if no new file)
+    if (req.files.profileImage?.[0]) {
+      updatedData.profileImage = {
+        data: req.files.profileImage[0].buffer,
+        contentType: req.files.profileImage[0].mimetype,
+      };
+    } else {
+      updatedData.profileImage = entrepreneur.profileImage;
+    }
+
+    // For otherDocs: merge previous with new
     if (req.files.otherDocs?.length) {
       const newDocs = req.files.otherDocs.map((file) => ({
         data: file.buffer,
         contentType: file.mimetype,
       }));
-      updatedData.otherDocs = [
-        ...(entrepreneur.otherDocs || []),
-        ...newDocs,
-      ];
+      updatedData.otherDocs = [...(entrepreneur.otherDocs || []), ...newDocs];
     } else {
       updatedData.otherDocs = entrepreneur.otherDocs;
     }
 
-    // Now update
-    const updated = await Entrepreneur.findByIdAndUpdate(
-      userId,
-      updatedData,
-      { new: true, runValidators: true }
-    );
+    // Update
+    const updated = await Entrepreneur.findByIdAndUpdate(userId, updatedData, {
+      new: true,
+      runValidators: true,
+    });
 
     res.json({
       message: "Profile updated successfully",
@@ -450,6 +506,3 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({ message: "Server error while updating profile" });
   }
 };
-
-
-

@@ -74,8 +74,8 @@ const userSchema = new mongoose.Schema(
     },
     startupStage: {
       type: String,
-      enum: ["Idea", "MVP", "Revenue-generating"],
-      default: "Idea",
+      enum: ["", "Idea", "MVP", "Revenue-generating"],
+      default: "",
     },
     vision: {
       type: String,
