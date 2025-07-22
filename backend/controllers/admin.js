@@ -41,7 +41,10 @@ exports.RegisterUser = async (req, res) => {
 // Get all entrepreneurs whose status is pending
 exports.getPendingEntrepreneurs = async (req, res) => {
   try {
-    const pendingUsers = await Entrepreneur.find({ status: "Pending" }); // adjust "Pending" if needed
+    const pendingUsers = await Entrepreneur.find({ 
+      status: "Pending",
+      progress: 100
+    });
 
     res.status(200).json({
       count: pendingUsers.length,
@@ -52,6 +55,7 @@ exports.getPendingEntrepreneurs = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
 
 
 // get all investors whose status is pending
@@ -95,25 +99,38 @@ exports.verifyEntrepreneur = async (req, res) => {
     const { status, rejectionReason } = req.body;
 
     const entrepreneur = await Entrepreneur.findById(req.params.id);
-    if (!entrepreneur) return res.status(404).json({ message: "Entrepreneur not found" });
+    if (!entrepreneur) {
+      return res.status(404).json({ message: "Entrepreneur not found" });
+    }
 
-  
-    if (entrepreneur.status === "Approved" && status === "Rejected") {
+    // Check if trying to approve and progress is not 100
+    if (status === "Approved" && entrepreneur.progress !== 100) {
+      return res.status(400).json({
+        message: "Cannot approve entrepreneur profile: Profile is incomplete (progress must be 100%)"
+      });
+    }
+
+    // Allow setting to "Rejected" or any other valid status
+    if (status === "Rejected") {
       entrepreneur.status = "Rejected";
       entrepreneur.rejectionReason = rejectionReason || "";
     } else {
       entrepreneur.status = status;
-      entrepreneur.rejectionReason = status === "Rejected" ? rejectionReason : "";
+      entrepreneur.rejectionReason = ""; // clear rejection reason if approving or other status
     }
 
     await entrepreneur.save();
 
-    res.status(200).json({ message: `Entrepreneur ${status} successfully`, entrepreneur });
+    res.status(200).json({
+      message: `Entrepreneur status updated to ${status} successfully`,
+      entrepreneur
+    });
   } catch (error) {
     console.error("Error verifying entrepreneur:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 
 

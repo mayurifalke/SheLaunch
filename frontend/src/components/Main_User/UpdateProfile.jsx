@@ -18,6 +18,7 @@ import { Link } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import "./Entrepreneur.css";
 import axios from "axios";
+import { progress } from "framer-motion";
 
 const UpdateProfile = () => {
   const [key, setKey] = useState("personal");
@@ -46,6 +47,7 @@ const UpdateProfile = () => {
     aadharPan: null,
     startupCertificate: null,
     otherDocs: [],
+    progress: 0, // Initialize progress
   });
   const [preview, setPreview] = useState({
     profileImage: "",
@@ -122,6 +124,8 @@ const UpdateProfile = () => {
           fd.append(key, value);
         }
       });
+      // fd.append('progress', calculateProfileCompletion());
+      fd.set('progress', String(calculateProfileCompletion()));
 
       await axios.put("/api/users/update-profile", fd, {
         headers: {
@@ -185,6 +189,7 @@ const UpdateProfile = () => {
             businessLicense: data.businessLicense || null,
             aadharPan: data.aadharPan || null,
             startupCertificate: data.startupCertificate || null,
+            progress: data.progress || 0,
           }));
 
           const makeBase64 = (fileObj) => {
@@ -211,12 +216,13 @@ const UpdateProfile = () => {
               ? data.otherDocs.map(makeBase64).filter(Boolean)
               : [],
           });
+
         })
         .catch((error) => {
           console.error("Failed to load profile:", error);
         });
     }
-  }, []);
+  }, [progress]);
 
   const calculateProfileCompletion = () => {
     const requiredFields = [
@@ -617,7 +623,7 @@ const UpdateProfile = () => {
                     <div className="mb-2">
                       <Image
                         src={preview.aadharPan}
-                        alt="Aadhaar/PAN"
+                        alt="Aadhar/PAN"
                         thumbnail
                         width={200}
                       />

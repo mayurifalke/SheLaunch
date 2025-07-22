@@ -385,6 +385,8 @@ exports.updateProfile = async (req, res) => {
 
     // Update only provided fields
     const updatedData = { ...req.body };
+    const progress = Number(req.body.progress);
+    updatedData.progress = isNaN(progress) ? 0 : progress;
 
     if (updatedData.investmentTypes) {
       updatedData.investmentTypes = JSON.parse(updatedData.investmentTypes);
@@ -396,7 +398,7 @@ exports.updateProfile = async (req, res) => {
 
     const [adminEmail, userEmail, investorEmail] = await Promise.all([
       Admin.findOne({ email: updatedData.email }),
-      User.findOne({ email: updatedData.email , _id: { $ne: userId } }),
+      User.findOne({ email: updatedData.email, _id: { $ne: userId } }),
       Investor.findOne({ email: updatedData.email }),
     ]);
 

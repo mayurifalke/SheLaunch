@@ -181,6 +181,10 @@ const userSchema = new mongoose.Schema(
       default: "",
       maxlength: [300, "Rejection reason cannot exceed 300 characters"],
     },
+    progress: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

@@ -293,7 +293,7 @@ const submitDisapprove = async () => {
             <h5 className="mb-3 text-bold fw-bold">Documents</h5>
 
             {renderDocumentSection("Business License", selectedEntrepreneur.businessLicense, "businessLicense")}
-            {renderDocumentSection("Aadhaar/PAN", selectedEntrepreneur.aadhaarPan, "aadhaarPan")}
+            {renderDocumentSection("Aadhaar/PAN", selectedEntrepreneur.aadharPan, "aadhaarPan")}
             {renderDocumentSection("Startup Certificate", selectedEntrepreneur.startupCertificate, "startupCertificate")}
           </Form>
         ) : (
