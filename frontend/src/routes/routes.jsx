@@ -32,6 +32,7 @@ import NewEntrepreneur from "../components/admin/NewEntrepreneur";
 import NewInvestor from "../components/admin/NewInvestor";
 import AllEntrepreneur from "../components/admin/AllEntrepreneur";
 import AllInvesotrs from "../components/admin/AllInvesotrs";
+import AllInvestor from "../components/Main_User/AllInvestor";
 
 const VITE_ENCRYPTION_KEY = "SheLaunch"; // ❗ Move to .env in production
 
@@ -202,6 +203,15 @@ const AppRoutes = () => {
               <UserRoleRoute
                 role="entrepreneur"
                 component={<UpdateProfile />}
+              />
+            }
+          />
+          <Route
+            path="allinvestors"
+            element={
+              <UserRoleRoute
+                role="entrepreneur"
+                component={<AllInvestor />}
               />
             }
           />

@@ -4,6 +4,7 @@ import { ColorModeContext, useMode } from "../theme"; // adjust path if needed
 import { SideBar } from "../components/Main_User/sidebar"; // adjust path if needed
 import { Navbar } from "../components/Main_User/navbar";
 import { Outlet } from "react-router-dom";
+import FloatingChatbot from "../components/Main_User/FloatingChatbot"; // adjust path if needed
 
 export const ToggledContext = createContext(null);
 
@@ -40,6 +41,7 @@ const EnterpreneurLayout = () => {
               <Navbar />
               <Box sx={{ overflowY: "auto", flex: 1, maxWidth: "100%" }}>
                 <Outlet />
+                <FloatingChatbot />
               </Box>
             </Box>
           </Box>

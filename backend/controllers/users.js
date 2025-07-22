@@ -5,6 +5,7 @@ const Entrepreneur = require("../models/userModel");
 const Investor = require("../models/investorModel");
 const Admin = require("../models/adminModel");
 const JWT_SECRET = process.env.JWT_SECRET;
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 exports.RegisterUser = async (req, res) => {
   try {
@@ -253,7 +254,7 @@ exports.getEntrepreneurProfile = async (req, res) => {
 exports.getAllInvestors = async (req, res) => {
   try {
     // Fetch all investors where status is approved (optional filter)
-    const investors = await Investor.find({ status: "Approved" });
+    const investors = await Investor.find();
 
     res.status(200).json({
       message: "Fetched all entrepreneur pitches successfully",
@@ -261,12 +262,11 @@ exports.getAllInvestors = async (req, res) => {
       investors,
     });
   } catch (error) {
-    console.error("Error fetching entrepreneur pitches:", error);
+    console.error("Error fetching investors:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
-// ✅ Save Investor when entrepreneur clicks "Save" button
 exports.saveInvestor = async (req, res) => {
   try {
     const entrepreneurId = req.user.id; // Logged-in entrepreneur's ID
@@ -293,21 +293,28 @@ exports.saveInvestor = async (req, res) => {
       entrepreneur.savedInvestors = [];
     }
 
-    // Check for duplicates
-    if (entrepreneur.savedInvestors.includes(investorId)) {
-      return res.status(400).json({ message: "Investor already saved" });
+    // Check if already saved
+    const index = entrepreneur.savedInvestors.indexOf(investorId);
+
+    let message = "";
+    if (index !== -1) {
+      // Investor already saved -> remove it
+      entrepreneur.savedInvestors.splice(index, 1);
+      message = "Investor unsaved successfully";
+    } else {
+      // Not saved -> add it
+      entrepreneur.savedInvestors.push(investorId);
+      message = "Investor saved successfully";
     }
 
-    // Save investor
-    entrepreneur.savedInvestors.push(investorId);
     await entrepreneur.save();
 
     res.status(200).json({
-      message: "Investor saved successfully",
+      message,
       savedInvestors: entrepreneur.savedInvestors,
     });
   } catch (error) {
-    console.error("Error saving investor:", error);
+    console.error("Error saving/unsaving investor:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -506,5 +513,47 @@ exports.updateProfile = async (req, res) => {
         .json({ message: "Validation error", errors: messages });
     }
     res.status(500).json({ message: "Server error while updating profile" });
+  }
+};
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+exports.chatbotAskQuery = async (req, res) => {
+  const { question } = req.body;
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const systemPrompt = `
+You are SheLaunchBot, an AI assistant helping women entrepreneurs.
+
+Answer ONLY questions related to:
+- startups
+- entrepreneurship
+- business ideas
+- funding
+- pitch decks
+- investor relations
+- marketing
+- financial management
+- skill development for entrepreneurs
+- team building
+- growth and scalability
+
+If the question is unrelated (e.g. general knowledge, coding, maths, politics, entertainment, or anything outside business), politely respond:
+"I am designed to assist with startup, business, and entrepreneurship-related queries. Please ask questions in these areas."
+
+Be concise, supportive, and clear.
+
+User question: ${question}
+`;
+
+    const result = await model.generateContent(systemPrompt);
+    const response = result.response;
+    const text = response.text();
+
+    res.json({ answer: text });
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    res.status(500).json({ answer: "Sorry, something went wrong." });
   }
 };

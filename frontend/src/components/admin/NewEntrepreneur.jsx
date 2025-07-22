@@ -167,6 +167,37 @@ const submitDisapprove = async () => {
   }
 };
 
+const handleDelete = async () => {
+  if (!selectedEntrepreneur || !selectedEntrepreneur._id) {
+    toast.error("Entrepreneur ID not found.");
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Authorization token not found.");
+      return;
+    }
+
+    const res = await axios.delete(`/api/admin/delete-entrepreneur/${selectedEntrepreneur._id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    toast.success(res.data.message || "Entrepreneur deleted successfully.");
+
+    // Update your state to remove the deleted entrepreneur from table immediately
+    setRows(rows.filter(e => e._id !== selectedEntrepreneur._id));
+
+    // Close modal
+    setShowModal2(false);
+  } catch (error) {
+    // console.error(error);
+    toast.error("Failed to delete entrepreneur.");
+  }
+};
+
+
 
   return (
     <div className="container mt-5">
@@ -293,7 +324,7 @@ const submitDisapprove = async () => {
             <h5 className="mb-3 text-bold fw-bold">Documents</h5>
 
             {renderDocumentSection("Business License", selectedEntrepreneur.businessLicense, "businessLicense")}
-            {renderDocumentSection("Aadhaar/PAN", selectedEntrepreneur.aadharPan, "aadhaarPan")}
+            {renderDocumentSection("Aadhaar/PAN", selectedEntrepreneur.aadharPan, "aadharPan")}
             {renderDocumentSection("Startup Certificate", selectedEntrepreneur.startupCertificate, "startupCertificate")}
           </Form>
         ) : (
@@ -304,8 +335,8 @@ const submitDisapprove = async () => {
         <Button variant="success" onClick={handleApprove}>
   Approve
 </Button>
-<Button variant="danger" onClick={handleDisapprove}>
-  Disapprove
+<Button variant="danger" onClick={handleDelete}>
+  Delete
 </Button>
 
       </Modal.Footer>

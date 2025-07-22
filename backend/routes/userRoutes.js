@@ -40,7 +40,7 @@ router.get("/all-investors", usersController.getAllInvestors);
 router.post(
   "/save-investor",
   isUserLoggedIn,
-  authorizeRole("user"),
+  authorizeRole("entrepreneur"),
   usersController.saveInvestor
 );
 
@@ -73,4 +73,12 @@ router.put(
   ]),
   usersController.updateProfile
 );
+
+router.post(
+  "/chatbot",
+  isUserLoggedIn,
+  authorizeRole("entrepreneur"),
+  usersController.chatbotAskQuery
+);
+
 module.exports = router;
