@@ -54,8 +54,8 @@ const Header = () => {
                 show={showModal}
                 handleClose={() => setShowModal(false)}
               /> */}
-             
-              <Nav.Link href="#portfolio" className="nav-item-link">
+
+              <Nav.Link href="#idea-generator" className="nav-item-link">
                 Idea Generator
               </Nav.Link>
               <Nav.Link href="#team" className="nav-item-link">

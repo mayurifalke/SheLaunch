@@ -33,6 +33,9 @@ import NewInvestor from "../components/admin/NewInvestor";
 import AllEntrepreneur from "../components/admin/AllEntrepreneur";
 import AllInvesotrs from "../components/admin/AllInvesotrs";
 import AllInvestor from "../components/Main_User/AllInvestor";
+import MyConnections from "../components/Main_User/MyConnections";
+import Messages from "../components/Main_User/Messages";
+import IdeaGenerator from "../components/IdeaGenerator";
 
 const VITE_ENCRYPTION_KEY = "SheLaunch"; // ❗ Move to .env in production
 
@@ -140,6 +143,8 @@ const AppRoutes = () => {
             element={<EntrepreneurRegistration />}
           />
           <Route path="login" element={<EntrepreneurLogin />} />
+          <Route path="idea-generator" element={<IdeaGenerator />} />
+
         </Route>
 
         {/* Investor layout routes */}
@@ -209,9 +214,24 @@ const AppRoutes = () => {
           <Route
             path="allinvestors"
             element={
+              <UserRoleRoute role="entrepreneur" component={<AllInvestor />} />
+            }
+          />
+          <Route
+            path="myconnections"
+            element={
               <UserRoleRoute
                 role="entrepreneur"
-                component={<AllInvestor />}
+                component={<MyConnections />}
+              />
+            }
+          />
+          <Route
+            path="messages"
+            element={
+              <UserRoleRoute
+                role="entrepreneur"
+                component={<Messages />}
               />
             }
           />
@@ -261,13 +281,13 @@ const AppRoutes = () => {
           <Route
             path="allentrepreneurs"
             element={
-              <UserRoleRoute role="admin" component={<AllEntrepreneur/>} />
+              <UserRoleRoute role="admin" component={<AllEntrepreneur />} />
             }
           />
           <Route
             path="allinvestors"
             element={
-              <UserRoleRoute role="admin" component={<AllInvesotrs/>} />
+              <UserRoleRoute role="admin" component={<AllInvesotrs />} />
             }
           />
           <Route

@@ -208,7 +208,19 @@ export const SideBar = () => {
             path="/entrepreneur/allinvestors"
             icon={<FaBusinessTime />}
             collapsed={collapsed}
-          />  
+          />{" "}
+          <Item
+            title="My Connections"
+            path="/entrepreneur/myconnections"
+            icon={<FaBusinessTime />}
+            collapsed={collapsed}
+          />
+          <Item
+            title="Messages"
+            path="/entrepreneur/messages"
+            icon={<FaBusinessTime />}
+            collapsed={collapsed}
+          />
           <Item
             title="Saved Investors"
             path="/entrepreneur/savedinvestors"

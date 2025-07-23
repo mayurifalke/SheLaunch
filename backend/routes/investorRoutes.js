@@ -8,16 +8,34 @@ const { authorizeRole } = require("../middleware/authenticateRole");
 router.post("/register-investor", investorController.RegisterInvestor);
 
 // Browse all entrepreneurs
-router.get("/browse-pitches",isUserLoggedIn, investorController.getAllEntrepreneurPitches);
+router.get(
+  "/browse-pitches",
+  isUserLoggedIn,
+  investorController.getAllEntrepreneurPitches
+);
 
 // Save entrepreneur to investor's saved list array
-router.post("/save-entrepreneur", isUserLoggedIn, authorizeRole("investor"), investorController.saveEntrepreneur);
+router.post(
+  "/save-entrepreneur",
+  isUserLoggedIn,
+  authorizeRole("investor"),
+  investorController.saveEntrepreneur
+);
 
 // Mark interest in an entrepreneur
-router.post("/mark-interested", isUserLoggedIn, authorizeRole("investor"), investorController.markInterestedEntrepreneur);
+router.post(
+  "/mark-interested",
+  isUserLoggedIn,
+  authorizeRole("investor"),
+  investorController.markInterestedEntrepreneur
+);
 
 // Get all saved entrepreneurs for the investor
-router.get("/get-saved-entrepreneurs", isUserLoggedIn, investorController.getSavedEntrepreneurs);
+router.get(
+  "/get-saved-entrepreneurs",
+  isUserLoggedIn,
+  investorController.getSavedEntrepreneurs
+);
 
 //to delete the enterprenuer from savedEntrepreneurs array
 router.delete(
@@ -28,11 +46,34 @@ router.delete(
 );
 
 // ✅ Route to get Investor Profile
-router.get("/investor-profile", isUserLoggedIn, investorController.getInvestorProfile);
+router.get(
+  "/investor-profile",
+  isUserLoggedIn,
+  investorController.getInvestorProfile
+);
 
 // ✅ Route to get all investors
 router.get("/all-investors", investorController.getAllInvestors);
 
+router.post(
+  "make-connection",
+  isUserLoggedIn,
+  authorizeRole("investor"),
+  investorController.sendConnectionRequest
+);
 
+router.get(
+  "/get-connections/:investorId",
+  isUserLoggedIn,
+  authorizeRole("investor"),
+  investorController.getInvestorConnections
+);
+
+router.put(
+  "/update-connection-status",
+  isUserLoggedIn,
+  authorizeRole("investor"),
+  investorController.updateConnectionStatus
+);
 
 module.exports = router;

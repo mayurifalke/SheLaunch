@@ -81,4 +81,28 @@ router.post(
   usersController.chatbotAskQuery
 );
 
+router.post(
+  "/make-connection",
+  isUserLoggedIn,
+  authorizeRole("entrepreneur"),
+  usersController.sendConnectionRequest
+);
+
+router.get(
+  "/get-connections",
+  isUserLoggedIn,
+  authorizeRole("entrepreneur"),
+  usersController.getEntrepreneurConnections
+);
+
+router.put(
+  "/update-connection-status",
+  isUserLoggedIn,
+  authorizeRole("entrepreneur"),
+  usersController.updateConnectionStatus
+);
+
+router.post("/generate-business-idea", usersController.generateBusinessIdea);
+router.post("/ask-followup", usersController.chatbotAskQuery);
+
 module.exports = router;

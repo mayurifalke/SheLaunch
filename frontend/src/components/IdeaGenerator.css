@@ -1,0 +1,9 @@
+@keyframes floatUpDown {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); } /* adjust distance */
+  100% { transform: translateY(0px); }
+}
+
+.float-animation {
+  animation: floatUpDown 2s ease-in-out infinite;
+}

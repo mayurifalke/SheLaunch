@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use, useInsertionEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
@@ -7,54 +7,77 @@ import "react-toastify/dist/ReactToastify.css";
 
 const AllInvestor = () => {
   const [pitches, setPitches] = useState([]);
-  const [selectedPitch, setSelectedPitch] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [showInvestModal, setShowInvestModal] = useState(false);
-  const [amount, setAmount] = useState("");
-  const [type, setType] = useState("Equity");
-  const [period, setPeriod] = useState("");
-  const [notes, setNotes] = useState("");
   const [flippedCards, setFlippedCards] = useState({});
 
   useEffect(() => {
-    const fetchData = async () => {
-      const token = localStorage.getItem("token");
-      try {
-        // Fetch all investors
-        const resInvestors = await axios.get("/api/users/all-investors", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  const fetchData = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      // Fetch all investors
+      const resInvestors = await axios.get("/api/users/all-investors", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        // Fetch saved investors (full objects)
-        const resSaved = await axios.get("/api/users/get-saved-investors", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      // Fetch saved investors
+      const resSaved = await axios.get("/api/users/get-saved-investors", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        // Extract IDs of saved investors
-        const savedIds = resSaved.data.savedInvestors.map((s) => s._id);
+      // Fetch connections
+      const resConnections = await axios.get("/api/users/get-connections", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        // Combine and mark saved
-        const mapped = resInvestors.data.investors.map((inv) => ({
-          id: inv._id,
-          name: inv.name,
-          email: inv.email,
-          contact: inv.contactno,
-          categories: inv.categories || [],
-          minInvestment: inv.minInvestment,
-          maxInvestment: inv.maxInvestment,
-          status: inv.status,
-          image: "/images/person1.png",
-          saved: savedIds.includes(inv._id), // <-- mark as saved
-        }));
+      // Extract IDs of saved investors
+      const savedIds = resSaved.data.savedInvestors.map((s) => s._id);
 
-        setPitches(mapped);
-      } catch (err) {
-        console.error("Failed to fetch investors or saved investors:", err);
-      }
-    };
+      // Build investorStatusMap
+      const investorStatusMap = {};
+      resConnections.data.connections.forEach(conn => {
+        investorStatusMap[conn.investor._id] = conn.status;
+      });
 
-    fetchData();
-  }, []);
+      // Combine and mark saved + add connectionStatus
+      const mapped = resInvestors.data.investors.map((inv) => ({
+        id: inv._id,
+        name: inv.name,
+        email: inv.email,
+        contact: inv.contactno,
+        categories: inv.categories || [],
+        minInvestment: inv.minInvestment,
+        maxInvestment: inv.maxInvestment,
+        status: inv.status,
+        image: "/images/person1.png",
+        saved: savedIds.includes(inv._id),
+        connectionStatus: investorStatusMap[inv._id] || null,
+      }));
+
+      setPitches(mapped);
+    } catch (err) {
+      console.error("Failed to fetch investors or saved investors:", err);
+    }
+  };
+
+  fetchData();
+}, []);
+
+
+  const handleConnect = async (investorId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.post(
+        `/api/users/make-connection`,
+        { investorId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(res.data.message || "Connection request sent!");
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Failed to send connection request"
+      );
+    }
+  };
 
   const handleSaveInvestor = async (investorId) => {
     const token = localStorage.getItem("token");
@@ -81,7 +104,6 @@ const AllInvestor = () => {
       );
     }
   };
-
 
   return (
     <div className="container py-4">
@@ -230,9 +252,32 @@ const AllInvestor = () => {
                     </Form>
 
                     <div className="d-flex justify-content-center gap-4">
-                      <Button size="sm" variant="outline-primary">
-                        Connect
+                      <Button
+                        size="sm"
+                        variant={
+                          inv.connectionStatus === "Pending"
+                            ? "secondary"
+                            : inv.connectionStatus === "Accepted"
+                            ? "danger"
+                            : inv.connectionStatus === "Rejected"
+                            ? "dark"
+                            : "outline-primary"
+                        }
+                        onClick={() => handleConnect(inv.id)}
+                        disabled={
+                          inv.connectionStatus === "Pending" ||
+                          inv.connectionStatus === "Rejected"
+                        }
+                      >
+                        {inv.connectionStatus === "Pending"
+                          ? "Pending"
+                          : inv.connectionStatus === "Accepted"
+                          ? "Remove Connection"
+                          : inv.connectionStatus === "Rejected"
+                          ? "Rejected"
+                          : "Connect"}
                       </Button>
+
                       <Button
                         size="sm"
                         variant={inv.saved ? "success" : "outline-success"}

@@ -6,7 +6,7 @@ const Investor = require("../models/investorModel");
 const Admin = require("../models/adminModel");
 const JWT_SECRET = process.env.JWT_SECRET;
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-
+const Connection = require("../models/connectionModel");
 exports.RegisterUser = async (req, res) => {
   try {
     const {
@@ -555,5 +555,103 @@ User question: ${question}
   } catch (error) {
     console.error("Gemini API Error:", error);
     res.status(500).json({ answer: "Sorry, something went wrong." });
+  }
+};
+
+
+exports.sendConnectionRequest = async (req, res) => {
+  try {
+    const entrepreneurId = req.user.id; // from JWT middleware
+    if (!entrepreneurId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const { investorId } = req.body;
+    if (!investorId) {
+      return res.status(400).json({ message: "Investor ID is required" });
+    }
+
+    // Check if connection already exists
+    const existing = await Connection.findOne({ entrepreneur: entrepreneurId, investor: investorId });
+    if (existing) {
+      return res.status(400).json({ message: "Connection already exists or is pending." });
+    }
+
+    const newConnection = new Connection({
+      entrepreneur: entrepreneurId,
+      investor: investorId,
+      status: "Pending"
+    });
+
+    await newConnection.save();
+    res.status(201).json({ message: "Connection request sent.", connection: newConnection });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+exports.getEntrepreneurConnections = async (req, res) => {
+  try {
+    const entrepreneurId = req.user.id; // or req.user.id if using auth
+
+    const connections = await Connection.find({ entrepreneur: entrepreneurId})
+      .populate('investor'); // get full investor details
+
+    res.status(200).json({ connections });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+exports.updateConnectionStatus = async (req, res) => {
+  try {
+    const { connectionId, status } = req.body;  // status = "Accepted" or "Rejected"
+
+    const updated = await Connection.findByIdAndUpdate(
+      connectionId,
+      { status },
+      { new: true }
+    );
+
+    res.status(200).json({ message: `Connection ${status}.`, connection: updated });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+exports.generateBusinessIdea = async (req, res) => {
+  const {education, skills, budget, location,interest} = req.body;
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+    You are an AI Business Idea Generator for women entrepreneurs.
+    Generate a unique, practical, and profitable business idea based on the following user inputs:
+    User interest: ${interest}
+    Education:${education}
+    User skills: ${skills}
+    Budget: ${budget}
+    Location: ${location}
+
+    Based on this, suggest a practical and profitable business idea with:
+    - Business idea title
+    - Brief description
+    - Estimated startup cost
+    - Expected monthly profitability
+    - Tools or resources needed
+    Format clearly for direct display.
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    const text = response.text();
+
+    res.json({ idea: text });
+  } catch (error) {
+    console.error("AI Error:", error);
+    res.status(500).json({ idea: "Sorry, something went wrong." });
   }
 };

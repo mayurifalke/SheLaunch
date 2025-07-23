@@ -236,6 +236,64 @@ exports.getAllInvestors = async (req, res) => {
   }
 };
 
+exports.updateConnectionStatus = async (req, res) => {
+  try {
+    const { connectionId, status } = req.body;  // status = "Accepted" or "Rejected"
 
+    const updated = await Connection.findByIdAndUpdate(
+      connectionId,
+      { status },
+      { new: true }
+    );
 
+    res.status(200).json({ message: `Connection ${status}.`, connection: updated });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
 
+exports.getInvestorConnections = async (req, res) => {
+  try {
+    const investorId = req.params.id; // or req.user.id if using auth
+
+    const connections = await Connection.find({ investor: investorId, status: "Accepted" })
+      .populate('entrepreneur'); // get full entrepreneur details
+
+    res.status(200).json({ connections });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+exports.sendConnectionRequest = async (req, res) => {
+  try {
+    const investorId = req.user.id; // from JWT middleware
+    if (!investorId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const { entrepreneurId } = req.body;
+    if (!entrepreneurId) {
+      return res.status(400).json({ message: "Entrepreneur ID is required" });
+    }
+
+    // Check if connection already exists
+    const existing = await Connection.findOne({ entrepreneur: entrepreneurId, investor: investorId });
+    if (existing) {
+      return res.status(400).json({ message: "Connection already exists or is pending." });
+    }
+
+    const newConnection = new Connection({
+      entrepreneur: entrepreneurId,
+      investor: investorId,
+      status: "Pending"
+    });
+
+    await newConnection.save();
+    res.status(201).json({ message: "Connection request sent.", connection: newConnection });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
