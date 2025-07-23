@@ -86,7 +86,7 @@ const IdeaGenerator = () => {
       </div>
       <div>
         <img
-          src="/images/chatbot2.png"
+          src="/images/chatbot2.jpg"
           alt=""
           style={{ width: "10rem" }}
           className="float-animation"
