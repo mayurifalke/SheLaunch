@@ -14,6 +14,8 @@ const InvestorAuthModal = ({ show, handleClose }) => {
     categories: "",
     minInvestment: "",
     maxInvestment: "",
+    aadharPan: null,
+    certificate: null,
   });
 
   const handleSignupChange = (e) => {
@@ -25,18 +27,41 @@ const handleSignupSubmit = async (e) => {
   console.log("Investor SignUp Data:", signupData);
 
   try {
-    const res = await axios.post("/api/investors/register-investor", signupData);
-    
+    const formData = new FormData();
+
+    for (const key in signupData) {
+      if (key !== "aadharPan" && key !== "certificate") {
+        formData.append(key, signupData[key]);
+      }
+    }
+
+    if (signupData.aadharPan) {
+      formData.append('aadharPan', signupData.aadharPan);
+    }
+    if (signupData.certificate) {
+      formData.append('certificate', signupData.certificate);
+    }
+
+    const res = await axios.post("/api/investors/register-investor", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
     console.log("API Response:", res.data);
 
     Swal.fire("Success", "Sign up completed!", "success");
-    setSignupData({name: "",
-    email: "",
-    password: "",
-    contactno: "",
-    categories: "",
-    minInvestment: "",
-    maxInvestment: "",});
+    setSignupData({
+      name: "",
+      email: "",
+      password: "",
+      contactno: "",
+      categories: "",
+      minInvestment: "",
+      maxInvestment: "",
+      aadharPan: null,
+      certificate: null,
+    });
     handleClose();
 
   } catch (error) {
@@ -44,6 +69,15 @@ const handleSignupSubmit = async (e) => {
     Swal.fire("Error", error.response?.data?.message || "Registration failed", "error");
   }
 };
+
+
+
+  const handleChange = (e) => {
+    const { name, files } = e.target;   
+    if (files && files.length > 0) {
+      setSignupData({ ...signupData, [name]: files[0] });
+    }
+  }
 
   return (
     <Modal
@@ -136,6 +170,24 @@ const handleSignupSubmit = async (e) => {
               placeholder="Max Investment (₹)"
               value={signupData.maxInvestment}
               onChange={handleSignupChange}
+            />
+          </Form.Group>
+
+           <Form.Group className="mb-3">
+            <label htmlFor="">Adhar Card / Pan card</label>
+            <Form.Control
+                               type="file"
+                               name="aadharPan"
+                               onChange={handleChange}
+                             />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <label htmlFor="">Company Certificate / Proof of funds</label>
+            <Form.Control
+              type="file"
+              name="certificate"
+              onChange={handleChange}
             />
           </Form.Group>
 

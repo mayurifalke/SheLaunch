@@ -258,7 +258,7 @@ const AllInvestor = () => {
                           inv.connectionStatus === "Pending"
                             ? "secondary"
                             : inv.connectionStatus === "Accepted"
-                            ? "danger"
+                            ? "primary"
                             : inv.connectionStatus === "Rejected"
                             ? "dark"
                             : "outline-primary"
@@ -272,7 +272,7 @@ const AllInvestor = () => {
                         {inv.connectionStatus === "Pending"
                           ? "Pending"
                           : inv.connectionStatus === "Accepted"
-                          ? "Remove Connection"
+                          ? "Connected"
                           : inv.connectionStatus === "Rejected"
                           ? "Rejected"
                           : "Connect"}

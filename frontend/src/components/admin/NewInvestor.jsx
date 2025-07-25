@@ -17,10 +17,12 @@ import Form from 'react-bootstrap/Form';
 const columns = [
   { id: 'sr', label: 'Sr. No.', minWidth: 50 },
   { id: 'name', label: 'Name', minWidth: 150 },
-  { id: 'startupname', label: 'Startup Name', minWidth: 150 },
-  { id: 'industry', label: 'Industry', minWidth: 100 },
+  { id: 'email', label: 'Email', minWidth: 150 },
+  { id: 'categories', label: 'Industry', minWidth: 100 },
+  { id: 'status', label: 'Status', minWidth: 80 }, // 🆕 added
   { id: 'action', label: 'Action', minWidth: 60 },
 ];
+
 
 export default function NewInvestor() {
   const [rows, setRows] = useState([]);
@@ -78,24 +80,50 @@ const handleCloseDoc = () => {
 };
 
 
- const handleApprove = async () => {
+//  const handleApprove = async () => {
+//   try {
+//     const token = localStorage.getItem("token");
+//     await axios.put(
+//       `/api/admin/verify-investor/${selectedEntrepreneur._id}`,
+//       { status: "Approved" }, // ✅ send status explicitly
+//       {
+//         headers: { Authorization: `Bearer ${token}` },
+//       }
+//     );
+//     toast.success("Entrepreneur approved successfully");
+
+//     setShowModal(false);
+//     // Remove approved user from pending list immediately
+//     setRows(rows.filter(u => u._id !== selectedEntrepreneur._id));
+//   } catch (err) {
+//     console.error(err);
+//     toast.error("Failed to approve entrepreneur");
+//   }
+// };
+
+
+const handleApprove = async () => {
   try {
     const token = localStorage.getItem("token");
     await axios.put(
       `/api/admin/verify-investor/${selectedEntrepreneur._id}`,
-      { status: "Approved" }, // ✅ send status explicitly
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      { status: "Approved" },
+      { headers: { Authorization: `Bearer ${token}` } }
     );
-    toast.success("Entrepreneur approved successfully");
+    toast.success("Investor approved successfully");
 
     setShowModal(false);
-    // Remove approved user from pending list immediately
-    setRows(rows.filter(u => u._id !== selectedEntrepreneur._id));
+    // ✅ update status locally instead of removing row
+    setRows(prev =>
+      prev.map(u =>
+        u._id === selectedEntrepreneur._id
+          ? { ...u, status: "Approved" }
+          : u
+      )
+    );
   } catch (err) {
     console.error(err);
-    toast.error("Failed to approve entrepreneur");
+    toast.error("Failed to approve investor");
   }
 };
 
@@ -152,25 +180,32 @@ const submitDisapprove = async () => {
     const token = localStorage.getItem("token");
     await axios.put(
       `/api/admin/verify-investor/${selectedEntrepreneur._id}`,
-      { status: "Rejected", rejectionReason }, // ✅ send rejection reason
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      { status: "Rejected", rejectionReason },
+      { headers: { Authorization: `Bearer ${token}` } }
     );
-    toast.success("Entrepreneur disapproved successfully");
+    toast.success("Investor disapproved successfully");
     setShowRejectModal(false);
-    setRows(rows.filter(u => u._id !== selectedEntrepreneur._id));
-    setRejectionReason(""); // reset input
+
+    // ✅ update status locally instead of removing row
+    setRows(prev =>
+      prev.map(u =>
+        u._id === selectedEntrepreneur._id
+          ? { ...u, status: "Rejected" }
+          : u
+      )
+    );
+    setRejectionReason("");
   } catch (err) {
     console.error(err);
-    toast.error("Failed to disapprove entrepreneur");
+    toast.error("Failed to disapprove investor");
   }
 };
 
 
+
   return (
     <div className="container mt-5">
-      <h4 className="p-3 mb-1">New Entrepreneurs List</h4>
+      <h4 className="p-3 mb-1">New Investors List</h4>
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeButton />
 
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
@@ -202,6 +237,7 @@ const submitDisapprove = async () => {
                       );
                     } else if (column.id === 'action') {
                       return (
+                        <>
                         <TableCell key="action" align="left">
                          <button
   onClick={() => handleView(row)}
@@ -221,6 +257,8 @@ const submitDisapprove = async () => {
 
 
                         </TableCell>
+                         
+    </>
                       );
                     } else {
                       return (
@@ -252,7 +290,7 @@ const submitDisapprove = async () => {
       {/* Modal for viewing entrepreneur details */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered scrollable>
      <Modal.Header closeButton closeVariant="white" className="bg-dark text-white">
-  <Modal.Title>Entrepreneur Details</Modal.Title>
+  <Modal.Title>Investor Details</Modal.Title>
 </Modal.Header>
 
       <Modal.Body style={{ maxHeight: "80vh", overflowY: "auto" }}>
@@ -263,19 +301,9 @@ const submitDisapprove = async () => {
               ["Email", "email"],
               ["Contact No", "contactno"],
               ["Education", "education"],
-              ["LinkedIn", "linkdinurl"],
-              ["Experience", "experience"],
-              ["Bio", "bio"],
-              ["Startup Name", "startupname"],
-              ["Industry", "industry"],
-              ["Vision", "vision"],
-              ["Description", "description"],
-              ["Website", "websiteurl"],
-              ["Funding Goal", "fundinggoal"],
-              ["Raised Funds", "raisedfunds"],
-              ["Use of Funds", "useoffunds"],
-              ["Pitch Deck URL", "pitchdeckurl"],
-              ["Video URL", "videourl"],
+              ["Max Investment", "maxInvestment"],
+              ["MIN Investment", "minInvestment"],
+              ["Categories", "categories"],
               ["Status", "status"],
             ].map(([label, field]) => (
               <Form.Group className="mb-3" key={field}>
@@ -292,9 +320,9 @@ const submitDisapprove = async () => {
             <hr />
             <h5 className="mb-3 text-bold fw-bold">Documents</h5>
 
-            {renderDocumentSection("Business License", selectedEntrepreneur.businessLicense, "businessLicense")}
-            {renderDocumentSection("Aadhaar/PAN", selectedEntrepreneur.aadhaarPan, "aadhaarPan")}
-            {renderDocumentSection("Startup Certificate", selectedEntrepreneur.startupCertificate, "startupCertificate")}
+            
+            {renderDocumentSection("Aadhaar/PAN", selectedEntrepreneur.aadharPan, "aadharPan")}
+            {renderDocumentSection("Company Certificate/Proof of Funds", selectedEntrepreneur.certificate, "certificate")}
           </Form>
         ) : (
           <p>Loading details...</p>

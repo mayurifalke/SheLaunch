@@ -195,12 +195,12 @@ export const SideBar = () => {
             icon={<MdOutlineBusiness />}
             collapsed={collapsed}
           />
-          {/* <Item
-            title="New Investor"
-            path="/admin/newinvestor"
+          <Item
+            title="New Investors"
+            path="/admin/newInvestors"
             icon={<FaBusinessTime />}
             collapsed={collapsed}
-          /> */}
+          />
            <Item
             title="All Entrepreneurs"
             path="/admin/allentrepreneurs"
@@ -208,7 +208,7 @@ export const SideBar = () => {
             collapsed={collapsed}
           />
           <Item
-            title="All Investors"
+            title="Approved Investors"
             path="/admin/allinvestors"
             icon={<MdOutlineBusiness />}
             collapsed={collapsed}

@@ -1,9 +1,17 @@
 /* eslint-disable react/prop-types */
-import { Avatar, Box, IconButton, Tooltip, tooltipClasses, Typography, useTheme } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  IconButton,
+  Tooltip,
+  tooltipClasses,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import { useContext, useState } from "react";
 import { tokens } from "../../../theme";
 import { Menu, MenuItem, Sidebar } from "react-pro-sidebar";
-import { MenuOutlined, DashboardOutlined } from '@mui/icons-material';
+import { MenuOutlined, DashboardOutlined } from "@mui/icons-material";
 import { FaBusinessTime } from "react-icons/fa6";
 import { MdOutlineBusiness } from "react-icons/md";
 import { AiFillEdit } from "react-icons/ai";
@@ -48,11 +56,13 @@ export const SideBar = () => {
       >
         {content}
       </Tooltip>
-    ) : content;
+    ) : (
+      content
+    );
   };
 
   return (
-     <Sidebar
+    <Sidebar
       backgroundColor="rgba(18, 18, 18, 0.8)" // black background
       rootStyles={{ border: 0, height: "100%" }}
       collapsed={collapsed}
@@ -124,7 +134,7 @@ export const SideBar = () => {
           </Box>
         </MenuItem>
       </Menu> */}
-          <Menu
+      <Menu
         menuItemStyles={{
           button: {
             ":hover": {
@@ -146,7 +156,6 @@ export const SideBar = () => {
             },
           },
         }}
-        
       >
         <MenuItem
           rootStyles={{
@@ -155,7 +164,7 @@ export const SideBar = () => {
           }}
         >
           <Box
-             sx={{
+            sx={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -184,7 +193,10 @@ export const SideBar = () => {
                 </Typography>
               </Box>
             )}
-            <IconButton onClick={() => setCollapsed(!collapsed)} sx={{ color: "#fff" }}>
+            <IconButton
+              onClick={() => setCollapsed(!collapsed)}
+              sx={{ color: "#fff" }}
+            >
               <MenuOutlined />
             </IconButton>
           </Box>
@@ -192,50 +204,49 @@ export const SideBar = () => {
       </Menu>
 
       <Box mb={6} mt={4} pl={collapsed ? undefined : "5%"}>
-  <Menu
-  menuItemStyles={{
-    button: {
-      ":hover": {
-        color: "#a754e6",
-        background: "transparent",
-        transition: ".4s ease",
-      },
-      marginBottom: "0.5rem", // spacing here
-    },
-    icon: {
-      color: "#fff",
-      ":hover": {
-        color: "#a754e6",
-      },
-    },
-    label: {
-      color: "#fff",
-      fontSize: "1rem",
-      ":hover": {
-        color: "#a754e6",
-      },
-    },
-  }}
->
-  <Item
-    title="Dashboard"
-    path="/admin"
-    icon={<DashboardOutlined />}
-    collapsed={collapsed}
-  />
-</Menu>
-
+        <Menu
+          menuItemStyles={{
+            button: {
+              ":hover": {
+                color: "#a754e6",
+                background: "transparent",
+                transition: ".4s ease",
+              },
+              marginBottom: "0.5rem", // spacing here
+            },
+            icon: {
+              color: "#fff",
+              ":hover": {
+                color: "#a754e6",
+              },
+            },
+            label: {
+              color: "#fff",
+              fontSize: "1rem",
+              ":hover": {
+                color: "#a754e6",
+              },
+            },
+          }}
+        >
+          <Item
+            title="Dashboard"
+            path="/investors"
+            icon={<DashboardOutlined />}
+            collapsed={collapsed}
+          />
+        </Menu>
 
         <Menu
           menuItemStyles={{
-             button: {
-      ":hover": {
-        color: "#a754e6",
-        background: "transparent",
-        transition: ".4s ease",
-      },
-      marginBottom: "0.5rem", // spacing here
-    },
+            button: {
+              ":hover": {
+                color: "#a754e6",
+                background: "transparent",
+                transition: ".4s ease",
+              },
+              marginBottom: "0.5rem", // spacing here
+            },
             icon: {
               color: "#fff",
               ":hover": {
@@ -244,10 +255,9 @@ export const SideBar = () => {
             },
             label: {
               color: "#fff",
-              fontSize:"1rem",
+              fontSize: "1rem",
               ":hover": {
                 color: "#a754e6",
-                
               },
             },
           }}

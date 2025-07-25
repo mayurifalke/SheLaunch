@@ -291,7 +291,7 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path="newinvestor"
+            path="newInvestors"
             element={<UserRoleRoute role="admin" component={<NewInvestor />} />}
           />
         </Route>

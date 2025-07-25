@@ -9,7 +9,7 @@ const SavedInvestors = () => {
   const [investors, setInvestors] = useState([]);
   const [flippedCards, setFlippedCards] = useState({});
 
- useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem("token");
       try {
@@ -28,7 +28,6 @@ const SavedInvestors = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Extract IDs of saved investors
         const savedIds = resSaved.data.savedInvestors.map((s) => s._id);
 
         // Build investorStatusMap
@@ -37,8 +36,13 @@ const SavedInvestors = () => {
           investorStatusMap[conn.investor._id] = conn.status;
         });
 
-        // Combine and mark saved + add connectionStatus
-        const mapped = resInvestors.data.investors.map((inv) => ({
+        // Filter only saved investors
+        const filteredInvestors = resInvestors.data.investors.filter((inv) =>
+          savedIds.includes(inv._id)
+        );
+
+        // Map with extra details
+        const mapped = filteredInvestors.map((inv) => ({
           id: inv._id,
           name: inv.name,
           email: inv.email,
@@ -48,11 +52,10 @@ const SavedInvestors = () => {
           maxInvestment: inv.maxInvestment,
           status: inv.status,
           image: "/images/person1.png",
-          saved: savedIds.includes(inv._id),
+          saved: true, // because these are saved investors
           connectionStatus: investorStatusMap[inv._id] || null,
         }));
-
-setInvestors(mapped);
+        setInvestors(mapped);
       } catch (err) {
         console.error("Failed to fetch investors or saved investors:", err);
       }
@@ -254,7 +257,7 @@ setInvestors(mapped);
                         inv.connectionStatus === "Pending"
                           ? "secondary"
                           : inv.connectionStatus === "Accepted"
-                          ? "danger"
+                          ? "primary"
                           : inv.connectionStatus === "Rejected"
                           ? "dark"
                           : "outline-primary"
@@ -268,7 +271,7 @@ setInvestors(mapped);
                       {inv.connectionStatus === "Pending"
                         ? "Pending"
                         : inv.connectionStatus === "Accepted"
-                        ? "Remove Connection"
+                        ? "Connected"
                         : inv.connectionStatus === "Rejected"
                         ? "Rejected"
                         : "Connect"}

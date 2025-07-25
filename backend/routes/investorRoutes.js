@@ -3,9 +3,16 @@ const router = express.Router();
 const investorController = require("../controllers/investor");
 const { isUserLoggedIn } = require("../middleware/authMiddleware");
 const { authorizeRole } = require("../middleware/authenticateRole");
+const upload = require("../middleware/uploadMiddleware");
 
-// Register a new investor
-router.post("/register-investor", investorController.RegisterInvestor);
+router.post(
+  "/register-investor",
+  upload.fields([
+    { name: "aadharPan", maxCount: 1 },
+    { name: "certificate", maxCount: 1 },
+  ]),
+  investorController.RegisterInvestor
+);
 
 // Browse all entrepreneurs
 router.get(

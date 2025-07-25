@@ -604,22 +604,22 @@ exports.getEntrepreneurConnections = async (req, res) => {
   }
 };
 
-exports.updateConnectionStatus = async (req, res) => {
-  try {
-    const { connectionId, status } = req.body;  // status = "Accepted" or "Rejected"
+// exports.updateConnectionStatus = async (req, res) => {
+//   try {
+//     const { connectionId, status } = req.body;  // status = "Accepted" or "Rejected"
 
-    const updated = await Connection.findByIdAndUpdate(
-      connectionId,
-      { status },
-      { new: true }
-    );
+//     const updated = await Connection.findByIdAndUpdate(
+//       connectionId,
+//       { status },
+//       { new: true }
+//     );
 
-    res.status(200).json({ message: `Connection ${status}.`, connection: updated });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error." });
-  }
-};
+//     res.status(200).json({ message: `Connection ${status}.`, connection: updated });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server error." });
+//   }
+// };
 
 exports.generateBusinessIdea = async (req, res) => {
   const {education, skills, budget, location,interest} = req.body;
@@ -653,5 +653,38 @@ exports.generateBusinessIdea = async (req, res) => {
   } catch (error) {
     console.error("AI Error:", error);
     res.status(500).json({ idea: "Sorry, something went wrong." });
+  }
+};
+
+exports.updateConnectionStatus = async (req, res) => {
+  try {
+    const { connectionId, status } = req.body;
+
+    if (typeof status !== "boolean") {
+      return res.status(400).json({ message: "Status must be boolean (true/false)." });
+    }
+
+    // Find the connection by ID
+    const connection = await Connection.findById(connectionId);
+    if (!connection) {
+      return res.status(404).json({ message: "Connection not found." });
+    }
+
+    // Update status based on provided value
+    if (status) {
+      connection.status = "Accepted";
+    } else {
+      connection.status = "Rejected";
+    }
+
+    await connection.save();
+
+    res.status(200).json({
+      message: `Connection has been ${status ? "accepted" : "rejected"} successfully.`,
+      connection
+    });
+  } catch (error) {
+    console.error("Error updating connection status:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
   }
 };

@@ -23,6 +23,26 @@ export const Navbar = () => {
   const [showModal, setShowModal] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const navigate = useNavigate();
+  const [acceptedConnections, setAcceptedConnections] = useState([]);
+
+  const fetchConnections = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.get("/api/users/get-connections", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const allConnections = response.data.connections || [];
+      setAcceptedConnections(
+        allConnections.filter((c) => c.status === "Accepted")
+      );
+    } catch (error) {
+      console.error("Error fetching connections:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchConnections();
+  }, []);
 
   const handleLogout = () => {
     Cookies.remove("She_Launch");
@@ -233,6 +253,16 @@ export const Navbar = () => {
             >
               {profileData?.name || "Name"}
             </h3>
+            <h5
+              style={{
+                marginTop: "20px",
+                fontWeight: "600",
+                fontSize: "1rem",
+                color: "#333",
+              }}
+            >
+              Connections: {acceptedConnections.length || "0"}
+            </h5>
             <p style={{ fontSize: "1rem", color: "#777", marginBottom: "8px" }}>
               {profileData?.email || "Email"}
             </p>
@@ -300,7 +330,13 @@ export const Navbar = () => {
                 gap: "12px",
               }}
             >
-              <Link to="/entrepreneur/update-profile" className="btn btn-primary btn-md" onClick={() => setShowModal(false)}>Update Profile</Link>
+              <Link
+                to="/entrepreneur/update-profile"
+                className="btn btn-primary btn-md"
+                onClick={() => setShowModal(false)}
+              >
+                Update Profile
+              </Link>
               <button
                 className="btn btn-outline-secondary btn-md"
                 onClick={() => setShowModal(false)}

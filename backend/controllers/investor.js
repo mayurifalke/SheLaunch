@@ -15,7 +15,9 @@ exports.RegisterInvestor = async (req, res) => {
 
     // ✅ Check required fields based on schema
     if (
-      !name || !email || !password || !contactno || !categories || !minInvestment || !maxInvestment ) {
+      !name || !email || !password || !contactno || !categories ||
+      !minInvestment || !maxInvestment
+    ) {
       return res.status(400).json({ message: "Please fill all the required fields" });
     }
 
@@ -25,22 +27,38 @@ exports.RegisterInvestor = async (req, res) => {
       return res.status(400).json({ message: "Investor already exists" });
     }
 
+    // ✅ Get files from request
+    const files = req.files;
+    // console.log("Uploaded files:", files);
+
+    // Validate files exist
+    if (!files.aadharPan || !files.certificate) {
+      return res.status(400).json({ message: "Please upload Aadhar/PAN and Certificate files" });
+    }
+
     // ✅ Create new investor user
     const newInvestor = new Investor({
       name,
       email,
       password,
       contactno,
-      // company,
       categories,
       minInvestment,
       maxInvestment,
-      // location,
-      // bio,
-      // website,
-      // linkedin,
       status: "Pending", // default status
       role: "investor", // default role
+
+      // ✅ Store files as Buffer and mimetype for retrieval or later upload to S3
+      aadharPan: {
+        data: files.aadharPan[0].buffer,
+        contentType: files.aadharPan[0].mimetype,
+        filename: files.aadharPan[0].originalname
+      },
+      certificate: {
+        data: files.certificate[0].buffer,
+        contentType: files.certificate[0].mimetype,
+        filename: files.certificate[0].originalname
+      },
     });
 
     await newInvestor.save();
@@ -48,7 +66,7 @@ exports.RegisterInvestor = async (req, res) => {
     res.status(201).json({ message: "Investor registered successfully", user: newInvestor });
   }
   catch (err) {
-    console.error(err);
+    // console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 };

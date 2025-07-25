@@ -66,6 +66,17 @@ const investorSchema = new mongoose.Schema(
       type: String,
       default: "investor",
     },
+   aadharPan: {
+    data: Buffer,
+    contentType: String,
+    filename: String
+  },
+  certificate: {
+    data: Buffer,
+    contentType: String,
+    filename: String
+  },
+
   },
   { timestamps: true }
 );

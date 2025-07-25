@@ -38,11 +38,10 @@ exports.RegisterUser = async (req, res) => {
 };
 
 //get all entreprenurs whose status is pending
-// Get all entrepreneurs whose status is pending
 exports.getPendingEntrepreneurs = async (req, res) => {
   try {
     const pendingUsers = await Entrepreneur.find({ 
-      status: "Pending",
+      status: { $in: ["Pending", "Rejected"] },
       progress: 100
     });
 
@@ -58,10 +57,10 @@ exports.getPendingEntrepreneurs = async (req, res) => {
 
 
 
-// get all investors whose status is pending
 exports.getPendingInvestors = async (req, res) => {
   try {
-    const pendingInvestors = await Investor.find({ status: "Pending" });
+    const pendingInvestors = await Investor.find({ status: { $in: ["Pending", "Rejected"] } });
+
     res.status(200).json({
       count: pendingInvestors.length,
       pendingInvestors});
