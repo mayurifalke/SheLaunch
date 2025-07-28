@@ -20,7 +20,7 @@ router.post(
 router.get(
   "/browse-pitches",
   isUserLoggedIn,
-  
+
   investorController.getAllEntrepreneurPitches
 );
 
@@ -77,12 +77,11 @@ router.post(
 );
 
 router.get(
-  "/get-connections", 
+  "/get-connections",
   isUserLoggedIn,
   authorizeRole("investor"),
   investorController.getInvestorConnections
 );
-
 
 router.put(
   "/update-connection-status",
@@ -91,5 +90,20 @@ router.put(
   authorizeRole("investor"),
   investorController.updateConnectionStatus
 );
+
+const investorUpload = upload.fields([
+  { name: "profileImage", maxCount: 1 },
+  { name: "aadharPan", maxCount: 1 },
+  { name: "certificate", maxCount: 1 },
+]);
+router.put(
+  "/updateProfile",
+  isUserLoggedIn,
+  authorizeRole("investor"),
+  investorUpload, // ✅ proper middleware function
+  investorController.updateInvestorProfile
+);
+
+router.get("/suggestStartups", isUserLoggedIn,authorizeRole("investor"), investorController.getSuggestedStartups);
 
 module.exports = router;

@@ -322,3 +322,112 @@ exports.sendConnectionRequest = async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 };
+
+exports.updateInvestorProfile = async (req, res) => {
+  try {
+    const investorId = req.user._id; // assuming req.user is set via middleware (auth)
+    const {
+      name,
+      email,
+      company,
+      contactno,
+      password,
+      categories,
+      maxInvestment,
+      minInvestment,
+      location,
+      bio,
+    } = req.body;
+
+    const updateFields = {
+      name,
+      email,
+      company,
+      contactno,
+      categories,
+      maxInvestment,
+      minInvestment,
+      location,
+      bio,
+    };
+
+    // handle password change if provided
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updateFields.password = await bcrypt.hash(password, salt);
+    }
+
+    // handle file uploads
+    if (req.files) {
+      if (req.files.profileImage && req.files.profileImage[0]) {
+        updateFields.profileImage = {
+          data: req.files.profileImage[0].buffer,
+          contentType: req.files.profileImage[0].mimetype,
+          filename: req.files.profileImage[0].originalname,
+        };
+      }
+      if (req.files.aadharPan && req.files.aadharPan[0]) {
+        updateFields.aadharPan = {
+          data: req.files.aadharPan[0].buffer,
+          contentType: req.files.aadharPan[0].mimetype,
+          filename: req.files.aadharPan[0].originalname,
+        };
+      }
+      if (req.files.certificate && req.files.certificate[0]) {
+        updateFields.certificate = {
+          data: req.files.certificate[0].buffer,
+          contentType: req.files.certificate[0].mimetype,
+          filename: req.files.certificate[0].originalname,
+        };
+      }
+    }
+
+    const updatedInvestor = await Investor.findByIdAndUpdate(
+      investorId,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: updatedInvestor,
+    });
+  } catch (error) {
+    console.error("Error updating investor profile:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.getSuggestedStartups = async (req, res) => {
+  try {
+    const investorId = req.user._id;
+
+
+    // Fetch investor details
+    const investor = await Investor.findById(investorId);
+    if (!investor) {
+      return res.status(404).json({ message: "Investor not found" });
+    }
+
+    const { categories } = investor;
+
+    // Match entrepreneurs with same industry as investor categories
+    const suggestedStartups = await Entrepreneur.find({
+  role: "entrepreneur",
+  industry: { $in: categories },
+  status: "Approved",
+})
+  .sort({ createdAt: -1 })
+  .limit(3)
+  .select(
+    "name startupname industry startupStage description fundinggoal raisedfunds progress profileImage"
+  );
+
+
+    res.status(200).json({ success: true, data: suggestedStartups });
+  } catch (error) {
+    console.error("Error fetching suggested startups:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

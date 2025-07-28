@@ -189,3 +189,36 @@ exports.markMessagesAsRead = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.deleteMessage = async (req, res) => {
+  try {
+    const messageId = req.params.messageId;
+    
+    // these should come from your auth middleware or session
+    const userId = req.user.id;            // logged-in user's ObjectId as string
+    const userRole = req.user.role;        // "entrepreneur" or "investor"
+
+    // find the message first
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    // check if logged-in user is the sender
+    if (
+      message.senderId.toString() !== userId ||
+      message.senderModel !== userRole
+    ) {
+      return res.status(403).json({ error: "You can only delete your own messages" });
+    }
+
+    // delete message
+    await Message.findByIdAndDelete(messageId);
+
+    res.status(200).json({ message: "Message deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
