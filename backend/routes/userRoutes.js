@@ -5,6 +5,7 @@ const { isUserLoggedIn } = require("../middleware/authMiddleware");
 const upload = require("../middleware/uploadMiddleware");
 const { authorizeRole } = require("../middleware/authenticateRole");
 const Entrepreneur = require("../models/userModel");
+const checkEntrepreneurApproval = require("../middleware/checkEntrepreneurApproval");
 console.log("✅ userRoutes.js loaded");
 
 router.get("/test", (req, res) => res.send("Test route works!"));
@@ -40,6 +41,7 @@ router.get("/all-investors", usersController.getAllInvestors);
 router.post(
   "/save-investor",
   isUserLoggedIn,
+  checkEntrepreneurApproval,
   authorizeRole("entrepreneur"),
   usersController.saveInvestor
 );
@@ -55,6 +57,7 @@ router.get(
 router.post(
   "/remove-saved-investor",
   isUserLoggedIn,
+  checkEntrepreneurApproval,
   authorizeRole("entrepreneur"),
   usersController.removeSavedInvestor
 );
@@ -63,6 +66,7 @@ router.post(
 router.put(
   "/update-profile",
   isUserLoggedIn,
+  checkEntrepreneurApproval,
   authorizeRole("entrepreneur"),
   upload.fields([
     { name: "businessLicense", maxCount: 1 },
@@ -77,6 +81,7 @@ router.put(
 router.post(
   "/chatbot",
   isUserLoggedIn,
+  checkEntrepreneurApproval,
   authorizeRole("entrepreneur"),
   usersController.chatbotAskQuery
 );
@@ -84,6 +89,7 @@ router.post(
 router.post(
   "/make-connection",
   isUserLoggedIn,
+  checkEntrepreneurApproval,
   authorizeRole("entrepreneur"),
   usersController.sendConnectionRequest
 );
@@ -98,6 +104,7 @@ router.get(
 router.put(
   "/update-connection-status",
   isUserLoggedIn,
+  checkEntrepreneurApproval,
   authorizeRole("entrepreneur"),
   usersController.updateConnectionStatus
 );

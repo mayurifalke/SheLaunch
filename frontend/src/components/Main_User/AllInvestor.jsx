@@ -9,75 +9,76 @@ const AllInvestor = () => {
   const [pitches, setPitches] = useState([]);
   const [flippedCards, setFlippedCards] = useState({});
 
-  useEffect(() => {
-  const fetchData = async () => {
-    const token = localStorage.getItem("token");
-    try {
-      // Fetch all investors
-      const resInvestors = await axios.get("/api/users/all-investors", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  // Move fetchData out of useEffect so it's accessible everywhere
+const fetchData = async () => {
+  const token = localStorage.getItem("token");
+  try {
+    const resInvestors = await axios.get("/api/users/all-investors", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      // Fetch saved investors
-      const resSaved = await axios.get("/api/users/get-saved-investors", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    const resSaved = await axios.get("/api/users/get-saved-investors", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      // Fetch connections
-      const resConnections = await axios.get("/api/users/get-connections", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    const resConnections = await axios.get("/api/users/get-connections", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      // Extract IDs of saved investors
-      const savedIds = resSaved.data.savedInvestors.map((s) => s._id);
+    const savedIds = resSaved.data.savedInvestors.map((s) => s._id);
 
-      // Build investorStatusMap
-      const investorStatusMap = {};
-      resConnections.data.connections.forEach(conn => {
-        investorStatusMap[conn.investor._id] = conn.status;
-      });
+    const investorStatusMap = {};
+    resConnections.data.connections.forEach((conn) => {
+      investorStatusMap[conn.investor._id] = conn.status;
+    });
+    console.log("Investor Status Map:", investorStatusMap);
 
-      // Combine and mark saved + add connectionStatus
-      const mapped = resInvestors.data.investors.map((inv) => ({
-        id: inv._id,
-        name: inv.name,
-        email: inv.email,
-        contact: inv.contactno,
-        categories: inv.categories || [],
-        minInvestment: inv.minInvestment,
-        maxInvestment: inv.maxInvestment,
-        status: inv.status,
-        image: "/images/person1.png",
-        saved: savedIds.includes(inv._id),
-        connectionStatus: investorStatusMap[inv._id] || null,
-      }));
 
-      setPitches(mapped);
-    } catch (err) {
-      console.error("Failed to fetch investors or saved investors:", err);
-    }
-  };
+    const mapped = resInvestors.data.investors.map((inv) => ({
+      id: inv._id,
+      name: inv.name,
+      email: inv.email,
+      contact: inv.contactno,
+      categories: inv.categories || [],
+      minInvestment: inv.minInvestment,
+      maxInvestment: inv.maxInvestment,
+      status: inv.status,
+      image: "/images/person1.png",
+      saved: savedIds.includes(inv._id),
+      connectionStatus: investorStatusMap[inv._id] || null,
+    }));
 
+    setPitches(mapped);
+  } catch (err) {
+    console.error("Failed to fetch investors or saved investors:", err);
+  }
+};
+
+// useEffect only runs fetchData once
+useEffect(() => {
   fetchData();
 }, []);
 
 
-  const handleConnect = async (investorId) => {
-    const token = localStorage.getItem("token");
-    try {
-      const res = await axios.post(
-        `/api/users/make-connection`,
-        { investorId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
 
-      toast.success(res.data.message || "Connection request sent!");
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Failed to send connection request"
-      );
-    }
-  };
+ const handleConnect = async (investorId) => {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await axios.post(
+      `/api/users/make-connection`,
+      { investorId },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    toast.success(res.data.message || "Connection request sent!");
+    fetchData(); // ✅ now this will actually work
+  } catch (err) {
+    toast.error(
+      err.response?.data?.message || "Failed to send connection request"
+    );
+  }
+};
+
 
   const handleSaveInvestor = async (investorId) => {
     const token = localStorage.getItem("token");
@@ -252,31 +253,33 @@ const AllInvestor = () => {
                     </Form>
 
                     <div className="d-flex justify-content-center gap-4">
-                      <Button
-                        size="sm"
-                        variant={
-                          inv.connectionStatus === "Pending"
-                            ? "secondary"
-                            : inv.connectionStatus === "Accepted"
-                            ? "primary"
-                            : inv.connectionStatus === "Rejected"
-                            ? "dark"
-                            : "outline-primary"
-                        }
-                        onClick={() => handleConnect(inv.id)}
-                        disabled={
-                          inv.connectionStatus === "Pending" ||
-                          inv.connectionStatus === "Rejected"
-                        }
-                      >
-                        {inv.connectionStatus === "Pending"
-                          ? "Pending"
-                          : inv.connectionStatus === "Accepted"
-                          ? "Connected"
-                          : inv.connectionStatus === "Rejected"
-                          ? "Rejected"
-                          : "Connect"}
-                      </Button>
+                    <Button
+  size="sm"
+  variant={
+    inv.connectionStatus === "Pending"
+      ? "secondary"
+      : inv.connectionStatus === "Accepted"
+      ? "primary"
+      : inv.connectionStatus === "Rejected"
+      ? "dark"
+      : "outline-primary"
+  }
+  onClick={() => handleConnect(inv.id)}
+  disabled={
+    inv.connectionStatus === "Pending" ||
+    inv.connectionStatus === "Accepted" ||
+    inv.connectionStatus === "Rejected"
+  }
+>
+  {inv.connectionStatus === "Pending"
+    ? "Pending"
+    : inv.connectionStatus === "Accepted"
+    ? "Connected"
+    : inv.connectionStatus === "Rejected"
+    ? "Rejected"
+    : "Connect"}
+</Button>
+
 
                       <Button
                         size="sm"

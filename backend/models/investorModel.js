@@ -7,7 +7,7 @@ const investorSchema = new mongoose.Schema(
       type: String,
       required: [true, "Name is required"],
       minlength: [2, "Name must be at least 2 characters long"],
-      maxlength: [50, "Name cannot exceed 50 characters"]
+      maxlength: [50, "Name cannot exceed 50 characters"],
     },
     email: {
       type: String,
@@ -15,44 +15,46 @@ const investorSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/\S+@\S+\.\S+/, "Please enter a valid email address"]
+      match: [/\S+@\S+\.\S+/, "Please enter a valid email address"],
     },
     company: {
       type: String,
-      maxlength: [100, "Company name cannot exceed 100 characters"]
+      maxlength: [100, "Company name cannot exceed 100 characters"],
     },
     contactno: {
       type: String,
       required: [true, "Contact number is required"],
-      match: [/^\d{10}$/, "Contact number must be exactly 10 digits"]
+      match: [/^\d{10}$/, "Contact number must be exactly 10 digits"],
     },
     password: {
       type: String,
       required: [true, "Password is required"],
-      minlength: [6, "Password must be at least 6 characters long"]
+      minlength: [6, "Password must be at least 6 characters long"],
     },
     categories: [String],
     maxInvestment: {
-      type: Number, 
+      type: Number,
       required: [true, "Maximum investment is required"],
     },
     minInvestment: {
-      type: Number, 
+      type: Number,
       required: [true, "Minimum investment is required"],
-      minlength: [1000, "Minimum investment must be at least 1000"]
+      minlength: [1000, "Minimum investment must be at least 1000"],
     },
     location: {
       type: String,
-      maxlength: [100, "Location cannot exceed 100 characters"]
+      maxlength: [100, "Location cannot exceed 100 characters"],
     },
     bio: {
       type: String,
-      maxlength: [500, "Bio cannot exceed 500 characters"]
+      maxlength: [500, "Bio cannot exceed 500 characters"],
     },
-    savedEntrepreneurs: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
-    }],
+    savedEntrepreneurs: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     status: {
       type: String,
       enum: ["Pending", "Approved", "Rejected"],
@@ -62,32 +64,35 @@ const investorSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    aadharPan: {
+      data: Buffer,
+      contentType: String,
+      filename: String,
+    },
+    certificate: {
+      data: Buffer,
+      contentType: String,
+      filename: String,
+    },
+    profileImage: {
+      data: Buffer,
+      contentType: String,
+      filename: String,
+    },
     role: {
       type: String,
       default: "investor",
     },
-   aadharPan: {
-    data: Buffer,
-    contentType: String,
-    filename: String
-  },
-  certificate: {
-    data: Buffer,
-    contentType: String,
-    filename: String
-  },
-
   },
   { timestamps: true }
 );
 
 //for hashing password before saving
-investorSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+investorSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
-
 
 module.exports = mongoose.model("Investor", investorSchema);

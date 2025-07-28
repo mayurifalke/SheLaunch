@@ -8,7 +8,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { tokens } from "../../../theme";
 import { Menu, MenuItem, Sidebar } from "react-pro-sidebar";
 import { MenuOutlined, DashboardOutlined } from "@mui/icons-material";
@@ -17,12 +17,32 @@ import { MdOutlineBusiness } from "react-icons/md";
 import { AiFillEdit } from "react-icons/ai";
 import { ToggledContext } from "../../../layouts/InvestorLayout";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 export const SideBar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { toggled, setToggled } = useContext(ToggledContext);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+    const [pendingRequests, setPendingRequests] = useState([]);
+  
+    const fetchConnections = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get("/api/investors/get-connections", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const allConnections = response.data.connections || [];
+        setPendingRequests(allConnections.filter((c) => c.status === "Pending"));
+        // console.log("Pending Requests:", pendingRequests.length);
+      } catch (error) {
+        console.error("Error fetching connections:", error);
+      }
+    };
+  
+    useEffect(() => {
+      fetchConnections();
+    }, []);
 
   const Item = ({ title, path, icon, collapsed }) => {
     const content = (
@@ -263,8 +283,47 @@ export const SideBar = () => {
           }}
         >
           <Item
+            title="Update Profile"
+            path="/investors/updateprofile"
+            icon={<MdOutlineBusiness />}
+            collapsed={collapsed}
+          />
+          <Item
             title="Browse Pitches"
             path="/investors/browsepitches"
+            icon={<MdOutlineBusiness />}
+            collapsed={collapsed}
+          />
+                <Item
+                      title="My Connections"
+                      path="/investors/myconnections"
+                      icon={
+                        <div style={{ position: "relative", display: "inline-block" }}>
+                          <FaBusinessTime />
+                          {pendingRequests.length > 0 && (
+                            <span
+                              style={{
+                                position: "absolute",
+                                top: "2px",
+                                right: "-3px",
+                                background: "red",
+                                color: "white",
+                                fontSize: "10px",
+                                borderRadius: "50%",
+                                padding: "2px 4px",
+                                lineHeight: "1",
+                              }}
+                            >
+                              {pendingRequests.length}
+                            </span>
+                          )}
+                        </div>
+                      }
+                      collapsed={collapsed}
+                    />
+                    <Item
+            title="Messages"
+            path="/investors/messages"
             icon={<MdOutlineBusiness />}
             collapsed={collapsed}
           />

@@ -1,206 +1,398 @@
-import React, { useState, useEffect } from "react";
-import { Modal, Button } from "react-bootstrap";
-import { FaLocationDot } from "react-icons/fa6";
-import { FaUserAlt } from "react-icons/fa";
 import axios from "axios";
-import "./Investor.css";
+import React, { useEffect, useState } from "react";
+import { Button, Form } from "react-bootstrap";
+import { FaBars, FaArrowLeft, FaLocationDot } from "react-icons/fa6";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SavedIdeas = () => {
-  const [savedIdeas, setSavedIdeas] = useState([]);
-  const [selectedIdea, setSelectedIdea] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+ const [entrepreneurs, setEntrepreneurs] = useState([]);
+const [flippedCards, setFlippedCards] = useState({});
 
-  const fetchSavedEntrepreneurs = async () => {
+useEffect(() => {
+  const fetchData = async () => {
+    const token = localStorage.getItem("token");
     try {
-      const token = localStorage.getItem("token");
       const res = await axios.get("/api/investors/get-saved-entrepreneurs", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      const data = res.data;
-      if (data.savedEntrepreneurs && Array.isArray(data.savedEntrepreneurs)) {
-        const mappedIdeas = data.savedEntrepreneurs.map((item) => ({
-          id: item._id,
-          name: item.startupname || "Untitled Startup",
-          owner: item.name,
-          location: "India",
-          category: item.industry,
-          fundingNeed: item.fundinggoal,
-          description: item.description,
-          email: item.email,
-          contact: item.contactno,
-          education: item.education,
-          linkdinurl: item.linkdinurl?.startsWith("http")
-            ? item.linkdinurl
-            : `https://${item.linkdinurl}`,
-          bio: item.bio || "No bio available",
-          website: item.websiteurl?.startsWith("http")
-            ? item.websiteurl
-            : `https://${item.websiteurl}`,
-          vision: item.vision || "No vision provided",
-        }));
-        setSavedIdeas(mappedIdeas);
-      } else {
-        console.error("Unexpected API response:", data);
-      }
-    } catch (error) {
-      console.error("Error fetching saved entrepreneurs:", error);
+      const savedEntrepreneurs = res.data.savedEntrepreneurs;
+
+      const mapped = savedEntrepreneurs.map((e) => {
+        let image = null; // fallback
+
+        if (
+          e.profileImage &&
+          e.profileImage.data &&
+          e.profileImage.data.data
+        ) {
+          const base64String = btoa(
+            new Uint8Array(e.profileImage.data.data).reduce(
+              (data, byte) => data + String.fromCharCode(byte),
+              ""
+            )
+          );
+          image = `data:${e.profileImage.contentType};base64,${base64String}`;
+        }
+
+        return {
+          id: e._id,
+          name: e.startupname || "Untitled Startup",
+          owner: e.name,
+          email: e.email,
+          contact: e.contactno,
+          category: e.industry,
+        categories: e.industry ? [e.industry] : [],
+        education: e.education || "Not provided",
+        fundingNeed: e.fundinggoal,
+        startupStage: e.startupStage || "Not specified",
+        teamSize: e.teamSize || "Not specified",
+        description: e.description,
+          image: image,
+          bio: e.bio || "No bio provided",
+            linkdinurl: e.linkdinurl?.startsWith("http")
+          ? e.linkdinurl
+          : `https://${item.linkdinurl}`,
+
+        website: e.websiteurl?.startsWith("http")
+          ? e.websiteurl
+          : `https://${item.websiteurl}`,
+        vision: e.vision || "No vision provided",
+        
+          saved: true,
+        };
+      });
+
+      setEntrepreneurs(mapped);
+    } catch (err) {
+      console.error("Failed to fetch saved entrepreneurs:", err);
     }
   };
 
-  useEffect(() => {
-    fetchSavedEntrepreneurs();
-  }, []);
+  fetchData();
+}, []);
 
-  const handleViewDetails = (idea) => {
-    setSelectedIdea(idea);
-    setShowModal(true);
-  };
-const handleRemove = async (id) => {
+
+
+ const handleSaveEntrepreneur = async (entrepreneurId) => {
+  const token = localStorage.getItem("token");
+  const entrepreneur = entrepreneurs.find((e) => e.id === entrepreneurId);
+
+  if (!entrepreneur) return;
+
   try {
-    // Immediately remove from UI
-    setSavedIdeas((prevIdeas) => prevIdeas.filter((idea) => idea.id !== id));
+    if (entrepreneur.saved) {
+      // If already saved, remove it
+      const res = await axios.delete(
+        `/api/investors/remove-saved-entrepreneur/${entrepreneurId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-    const token = localStorage.getItem("token");
-    const res = await axios.delete(
-      `/api/investors/remove-saved-entrepreneur/${id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+      toast.success(res.data.message || "Removed from saved");
 
-    toast.success(res.data.message || "Idea removed successfully!");
-  } catch (error) {
-    console.error("Error removing saved entrepreneur:", error);
-    toast.error(error.response?.data?.message || "Failed to remove idea");
+      // Update UI
+      setEntrepreneurs((prev) =>
+        prev.filter((e) => e.id !== entrepreneurId)
+      );
+    } else {
+      // Save it
+      const res = await axios.post(
+        "/api/investors/save-entrepreneur",
+        { entrepreneurId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-    // Optional: refetch list if there was an error to keep UI in sync
-    fetchSavedEntrepreneurs();
+      toast.success(res.data.message || "Saved successfully");
+
+      // Mark as saved in state
+      setEntrepreneurs((prev) =>
+        prev.map((e) =>
+          e.id === entrepreneurId ? { ...e, saved: true } : e
+        )
+      );
+    }
+  } catch (err) {
+    console.error("Error in save/unsave:", err);
+    toast.error(err.response?.data?.message || "Action failed");
   }
 };
 
+
+  const handleConnect = async (investorId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.post(
+        `/api/users/make-connection`,
+        { investorId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(res.data.message || "Connection request sent!");
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Failed to send connection request"
+      );
+    }
+  };
+    
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4">Saved Ideas</h2>
-
-      {savedIdeas.length === 0 ? (
-        <p>No saved ideas yet. Browse pitches and save your favorites!</p>
-      ) : (
-        <div className="row">
-          {savedIdeas.map((idea) => (
-            <div className="col-md-6 mb-4" key={idea.id}>
-              <div className="card h-100 pitch-card border-0">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-4 card-text">
-                    <h5 className="card-title">{idea.name}</h5>
-                    <span className="badge pitch-category p-2">
-                      {idea.category}
-                    </span>
-                  </div>
-                  <hr />
-                  <h6 className="card-text card-subtitle mb-4 mt-2 text-muted">
-                    <FaUserAlt /> {idea.owner} | <FaLocationDot />{" "}
-                    {idea.location}
-                  </h6>
-                  <p className="card-text">
-                    <strong>Funding Need:</strong> ₹{idea.fundingNeed}
-                  </p>
-                  <p className="card-text">
-                    {idea.description?.slice(0, 80)}...
-                  </p>
-
-                  <div className="d-flex flex-wrap gap-2 mt-3">
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={() => handleViewDetails(idea)}
-                    >
-                      🔍 View Details
-                    </button>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleRemove(idea.id)}
-                    >
-                      ❌ Remove
-                    </button>
-                    <button className="btn btn-success btn-sm">
-                      💬 Contact Founder
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Modal for Idea Details */}
-      <Modal
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        centered
-        size="lg"
+    <div className="m-4">
+      <h1
+        className="text-center mb-4 fw-bold"
+        style={{
+          fontSize: "2.2rem",
+          color: "#0d6efd",
+          textTransform: "uppercase",
+          letterSpacing: "1px",
+          borderBottom: "3px solid #0d6efd",
+          paddingBottom: "6px",
+          marginTop: "10px",
+        }}
       >
-        <Modal.Header closeButton>
-          <Modal.Title>{selectedIdea?.name}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedIdea && (
-            <>
-              <p>
-                <strong>Owner:</strong> {selectedIdea.owner}
-              </p>
-              <p>
-                <strong>Email:</strong> {selectedIdea.email}
-              </p>
-              <p>
-                <strong>Contact:</strong> {selectedIdea.contact}
-              </p>
-              <p>
-                <strong>Education:</strong> {selectedIdea.education}
-              </p>
-              <p>
-                <strong>Category:</strong> {selectedIdea.category}
-              </p>
-              <p>
-                <strong>Vision:</strong> {selectedIdea.vision}
-              </p>
-              <p>
-                <strong>Bio:</strong> {selectedIdea.bio}
-              </p>
-              <p>
-                <strong>Location:</strong> {selectedIdea.location}
-              </p>
-              <p>
-                <strong>Funding Needed:</strong> ₹{selectedIdea.fundingNeed}
-              </p>
-              <p>
-                <strong>Description:</strong> {selectedIdea.description}
-              </p>
-            </>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="d-flex flex-wrap gap-2 mt-3">
-            <Button
-              variant="primary"
-              onClick={() => window.open(selectedIdea.linkdinurl, "_blank")}
-            >
-              🔗 View LinkedIn
-            </Button>
-            <Button
-              variant="dark"
-              onClick={() => window.open(selectedIdea.website, "_blank")}
-            >
-              🌐 Visit Website
-            </Button>
-            <Button variant="success">💬 Contact Founder</Button>
+        Saved Entrepreneurs
+      </h1>
+      <div className="row">
+       {entrepreneurs.map((e) => (
+  <div
+    key={e.id}
+    className="col-md-4 mb-4"
+    style={{ perspective: "1000px" }}
+  >
+    <div
+      className="card-container position-relative"
+      style={{
+        width: "100%",
+        height: "450px",
+        transformStyle: "preserve-3d",
+        transition: "transform 0.6s",
+        transform: flippedCards[e.id]
+          ? "rotateY(180deg)"
+          : "rotateY(0deg)",
+        borderRadius: "20px",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+      }}
+    >
+      {/* Front */}
+      <div
+        className="card position-absolute w-100"
+        style={{
+          height: "100%",
+          borderRadius: "20px",
+          backfaceVisibility: "hidden",
+          background: "linear-gradient(135deg, #ffffff, #f9fafb)",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          className="d-flex align-items-center p-3 border-bottom"
+          style={{ background: "#fff" }}
+        >
+          <img
+            src={e.image}
+            alt="Entrepreneur"
+            className="rounded-circle"
+            style={{
+              height: "50px",
+              width: "50px",
+              objectFit: "cover",
+              border: "2px solid #eee",
+            }}
+          />
+          <div className="ms-3">
+            <h6 className="mb-0">{e.name}</h6>
+            <small className="text-muted">{e.contact}</small>
           </div>
-        </Modal.Footer>
-      </Modal>
+          <div className="ms-auto">
+            <button
+              className="btn btn-light rounded-circle"
+              onClick={() =>
+                setFlippedCards((prev) => ({ ...prev, [e.id]: true }))
+              }
+            >
+              <FaBars />
+            </button>
+          </div>
+        </div>
+
+        <Form className="card-body p-3">
+          <Form.Group className="mb-2 d-flex align-items-center">
+            <Form.Label
+              className="text-muted mb-0 me-2"
+              style={{ width: "120px" }}
+            >
+              Email
+            </Form.Label>
+            <Form.Control type="text" value={e.email} disabled />
+          </Form.Group>
+          <Form.Group className="mb-2 d-flex align-items-center">
+            <Form.Label
+              className="text-muted mb-0 me-2"
+              style={{ width: "120px" }}
+            >
+              Contact
+            </Form.Label>
+            <Form.Control type="text" value={e.contact} disabled />
+          </Form.Group>
+          <Form.Group className="mb-2 d-flex align-items-center">
+            <Form.Label
+              className="text-muted mb-0 me-2"
+              style={{ width: "120px" }}
+            >
+              Categories
+            </Form.Label>
+            <Form.Control
+              type="text"
+              value={e.categories.join(", ") || "N/A"}
+              disabled
+            />
+          </Form.Group>
+          <Form.Group className="mb-2 d-flex align-items-center">
+            <Form.Label
+              className="text-muted mb-0 me-2"
+              style={{ width: "120px" }}
+            >
+              Education
+            </Form.Label>
+            <Form.Control
+              type="text"
+              value={`${e.education}`}
+              disabled
+            />
+          </Form.Group>
+          <Form.Group className="mb-2 d-flex align-items-center">
+            <Form.Label
+              className="text-muted mb-0 me-2"
+              style={{ width: "120px" }}
+            >
+              Funding Needed
+            </Form.Label>
+            <Form.Control
+              type="text"
+              value={`₹${e.fundingNeed}`}
+              disabled
+            />
+          </Form.Group>
+
+           <div className="d-flex justify-content-center gap-4 mt-3">
+                              <Button
+                                size="sm"
+                                variant={
+                                  e.connectionStatus === "Pending"
+                                    ? "secondary"
+                                    : e.connectionStatus === "Accepted"
+                                    ? "primary"
+                                    : e.connectionStatus === "Rejected"
+                                    ? "dark"
+                                    : "outline-primary"
+                                }
+                                onClick={() => handleConnect(e.id)}
+                                disabled={
+                                  e.connectionStatus === "Pending" ||
+                                  e.connectionStatus === "Rejected"
+                                }
+                              >
+                                {e.connectionStatus === "Pending"
+                                  ? "Pending"
+                                  : e.connectionStatus === "Accepted"
+                                  ? "Connected"
+                                  : e.connectionStatus === "Rejected"
+                                  ? "Rejected"
+                                  : "Connect"}
+                              </Button>
+                             <Button
+  size="sm"
+  variant={e.saved ? "success" : "outline-success"}
+  onClick={() => handleSaveEntrepreneur(e.id)}
+>
+  {e.saved ? "✓ Saved" : "Save"}
+</Button>
+
+                            </div>
+        </Form>
+      </div>
+
+      {/* Back */}
+      <div
+        className="card bg-white text-dark position-absolute w-100"
+        style={{
+          height: "100%",
+          borderRadius: "20px",
+          transform: "rotateY(180deg)",
+          backfaceVisibility: "hidden",
+          boxShadow: "inset 0 0 10px rgba(0,0,0,0.05)",
+        }}
+      >
+        <div
+          className="card-header d-flex justify-content-between align-items-center"
+          style={{
+            background: "#f8f8f8",
+            borderBottom: "1px solid #eee",
+          }}
+        >
+          <div>
+            <h6 className="mb-0">{e.name}</h6>
+            <small className="text-muted">India</small>
+          </div>
+          <button
+            className="btn btn-light rounded-circle"
+            onClick={() =>
+              setFlippedCards((prev) => ({ ...prev, [e.id]: false }))
+            }
+          >
+            <FaArrowLeft />
+          </button>
+        </div>
+        <div className="card-body">
+           <p>
+            <strong>Bio:</strong> {e.bio}
+          </p>
+          <p>
+            <strong>Startup Stage:</strong> {e.startupStage}
+          </p>
+          <p>
+            <strong>Team Size:</strong> {e.teamSize}
+          </p>
+          <p>
+            <strong>Vision:</strong> {e.vision}
+          </p>
+            <p>
+                    <strong>Funding Needed:</strong> ₹{e.fundingNeed}
+                  </p>
+          <p>
+            <strong>Description:</strong> ₹{e.description}
+          </p>
+
+           <div className="d-flex justify-content-center gap-4">
+                              <Button
+                                size="sm"
+                                variant="outline-primary"
+                                onClick={() => window.open(e.linkdinurl, "_blank")}
+                              >
+                                🔗 LinkedIn
+                              </Button>
+          
+                              <Button
+                                size="sm"
+                                variant="outline-dark"
+                                onClick={() => window.open(e.website, "_blank")}
+                              >
+                                🌐 Website
+                              </Button>
+                            </div>
+        
+        </div>
+      </div>
+    </div>
+  </div>
+))}
+
+      </div>
+      <ToastContainer />
     </div>
   );
 };

@@ -36,6 +36,9 @@ import AllInvestor from "../components/Main_User/AllInvestor";
 import MyConnections from "../components/Main_User/MyConnections";
 import Messages from "../components/Main_User/Messages";
 import IdeaGenerator from "../components/IdeaGenerator";
+import MyConnectionsInvestors from "../components/Investors/MyConnectionsInvestors";
+import UpdateProfileInvestor from "../components/Investors/UpdateProfileInvestor";
+import Investor_Messages from "../components/Investors/Investor_Messages";
 
 const VITE_ENCRYPTION_KEY = "SheLaunch"; // ❗ Move to .env in production
 
@@ -181,6 +184,23 @@ const AppRoutes = () => {
               <UserRoleRoute role="investor" component={<MyInvestements />} />
             }
           />
+           <Route
+            path="myconnections"
+            element={
+              <UserRoleRoute role="investor" component={<MyConnectionsInvestors />} />
+            }
+          />
+          <Route
+            path="updateprofile"
+            element={
+              <UserRoleRoute role="investor" component={<UpdateProfileInvestor />} />
+            }
+          />
+          <Route
+            path="messages"
+            element={<UserRoleRoute role="investor" component={<Investor_Messages />} />}
+          />
+
         </Route>
 
         {/* Entrepreneur layout routes */}

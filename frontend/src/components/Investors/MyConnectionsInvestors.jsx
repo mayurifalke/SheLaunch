@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Button, ListGroup, Image } from "react-bootstrap";
 import axios from "axios";
 import { MdDelete } from "react-icons/md";
+import { ToastContainer, toast } from "react-toastify";
 
-function MyConnections() {
+function MyConnectionsInvestors() {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [acceptedConnections, setAcceptedConnections] = useState([]);
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -12,7 +13,7 @@ function MyConnections() {
 
   const fetchConnections = async () => {
     try {
-      const response = await axios.get("/api/users/get-connections", {
+      const response = await axios.get("/api/investors/get-connections", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const allConnections = response.data.connections || [];
@@ -28,13 +29,16 @@ function MyConnections() {
   const handleAccept = async (connectionId, status) => {
     try {
       await axios.put(
-        "/api/users/update-connection-status",
+        "/api/investors/update-connection-status",
         { connectionId, status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchConnections();
+      toast.success("Accepted connection successfully");
+      
     } catch (error) {
-      console.error("Error updating connection:", error);
+      // console.error("Error updating connection:", error.response?.data?.message);
+      toast.error(error.response?.data?.message || "Error Accepting/Rejecting connection"  );
     }
   };
 
@@ -55,7 +59,7 @@ function MyConnections() {
 
       <ListGroup variant="flush" className="mb-4">
         {pendingRequests.map((req) => {
-          const investor = req.investor;
+          const entrepreneur = req.entrepreneur;
           return (
             <ListGroup.Item
               key={req._id}
@@ -69,9 +73,9 @@ function MyConnections() {
                   style={{ width: "48px", height: "48px", marginRight: "12px" }}
                 />
                 <div>
-                  <div className="fw-semibold">{investor.name}</div>
+                  <div className="fw-semibold">{entrepreneur.name}</div>
                   <div style={{ fontSize: "0.9rem", color: "#555" }}>
-                    {investor.categories?.join(", ") || "Investor"}
+                    {entrepreneur.industry || "Entrepreneur"}
                   </div>
                   {/* <small className="text-muted">3 mutual connections</small> */}
                 </div>
@@ -100,7 +104,7 @@ function MyConnections() {
       {/* Accepted Connections Heading */}
       <div className="d-flex align-items-center mb-3 mt-4">
         <h4 className="fw-semibold text-success m-0">
-          🤝 Connected Investors{" "}
+          🤝 Connected Entrepreneurs{" "}
           <span className="badge bg-secondary">{acceptedConnections.length}</span>
         </h4>
         <div className="flex-grow-1 border-bottom ms-2"></div>
@@ -108,7 +112,7 @@ function MyConnections() {
 
       <ListGroup variant="flush">
         {acceptedConnections.map((conn) => {
-          const investor = conn.investor;
+          const entrepreneur = conn.entrepreneur;
           return (
             <ListGroup.Item
               key={conn._id}
@@ -122,9 +126,9 @@ function MyConnections() {
                   style={{ width: "48px", height: "48px", marginRight: "12px" }}
                 />
                 <div>
-                  <div className="fw-semibold">{investor.name}</div>
+                  <div className="fw-semibold">{entrepreneur.name}</div>
                   <div style={{ fontSize: "0.9rem", color: "#555" }}>
-                    {investor.categories?.join(", ") || "Investor"}
+                    {entrepreneur.industry || "Entrepreneur"}
                   </div>
                   <small className="text-muted">
                     Connected on {new Date(conn.createdAt).toLocaleDateString()}
@@ -180,8 +184,9 @@ function MyConnections() {
           );
         })}
       </ListGroup>
+      <ToastContainer />
     </div>
   );
 }
 
-export default MyConnections;
+export default MyConnectionsInvestors;

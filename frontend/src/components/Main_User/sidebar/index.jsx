@@ -19,6 +19,7 @@ import { ToggledContext } from "../../../layouts/EnterpreneurLayout";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import axios from "axios";
+import { AuthContext } from "../../../context/AuthContext";
 
 export const SideBar = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -26,6 +27,27 @@ export const SideBar = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [pendingRequests, setPendingRequests] = useState([]);
+const [unreadMessages, setUnreadMessages] = useState([]);
+  const { authUser } = useContext(AuthContext);
+ const fetchUnreadMessages = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.get(`/api/messages/unread/${authUser._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUnreadMessages(response.data);
+      // console.log("Unread Messages:", unreadMessages.length);
+    } catch (error) {
+      console.error("Error fetching unread messages:", error);
+    }
+  };
+
+useEffect(() => {
+  if (authUser && authUser._id) {
+    fetchUnreadMessages();
+  }
+}, [authUser]);
+
 
   const fetchConnections = async () => {
     const token = localStorage.getItem("token");
@@ -35,7 +57,7 @@ export const SideBar = () => {
       });
       const allConnections = response.data.connections || [];
       setPendingRequests(allConnections.filter((c) => c.status === "Pending"));
-      console.log("Pending Requests:", pendingRequests.length);
+      // console.log("Pending Requests:", pendingRequests.length);
     } catch (error) {
       console.error("Error fetching connections:", error);
     }
@@ -55,6 +77,7 @@ export const SideBar = () => {
         {!collapsed && title}
       </MenuItem>
     );
+   
 
     return collapsed ? (
       <Tooltip
@@ -264,10 +287,31 @@ export const SideBar = () => {
             }
             collapsed={collapsed}
           />
-          <Item
+         <Item
             title="Messages"
             path="/entrepreneur/messages"
-            icon={<FaBusinessTime />}
+            icon={
+              <div style={{ position: "relative", display: "inline-block" }}>
+                <FaBusinessTime />
+                {unreadMessages.length > 0 && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: "2px",
+                      right: "-3px",
+                      background: "red",
+                      color: "white",
+                      fontSize: "10px",
+                      borderRadius: "50%",
+                      padding: "2px 4px",
+                      lineHeight: "1",
+                    }}
+                  >
+                    {unreadMessages.length}
+                  </span>
+                )}
+              </div>
+            }
             collapsed={collapsed}
           />
           <Item

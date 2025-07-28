@@ -4,10 +4,12 @@ const investorController = require("../controllers/investor");
 const { isUserLoggedIn } = require("../middleware/authMiddleware");
 const { authorizeRole } = require("../middleware/authenticateRole");
 const upload = require("../middleware/uploadMiddleware");
+const checkInvestorApproval = require("../middleware/checkInvestorApproval");
 
 router.post(
   "/register-investor",
   upload.fields([
+    { name: "profileImage", maxCount: 1 },
     { name: "aadharPan", maxCount: 1 },
     { name: "certificate", maxCount: 1 },
   ]),
@@ -18,6 +20,7 @@ router.post(
 router.get(
   "/browse-pitches",
   isUserLoggedIn,
+  
   investorController.getAllEntrepreneurPitches
 );
 
@@ -25,6 +28,7 @@ router.get(
 router.post(
   "/save-entrepreneur",
   isUserLoggedIn,
+  checkInvestorApproval,
   authorizeRole("investor"),
   investorController.saveEntrepreneur
 );
@@ -33,6 +37,7 @@ router.post(
 router.post(
   "/mark-interested",
   isUserLoggedIn,
+  checkInvestorApproval,
   authorizeRole("investor"),
   investorController.markInterestedEntrepreneur
 );
@@ -48,6 +53,7 @@ router.get(
 router.delete(
   "/remove-saved-entrepreneur/:entrepreneurId",
   isUserLoggedIn,
+  checkInvestorApproval,
   authorizeRole("investor"),
   investorController.removeSavedEntrepreneur
 );
@@ -63,22 +69,25 @@ router.get(
 router.get("/all-investors", investorController.getAllInvestors);
 
 router.post(
-  "make-connection",
+  "/make-connection",
   isUserLoggedIn,
+  checkInvestorApproval,
   authorizeRole("investor"),
   investorController.sendConnectionRequest
 );
 
 router.get(
-  "/get-connections/:investorId",
+  "/get-connections", 
   isUserLoggedIn,
   authorizeRole("investor"),
   investorController.getInvestorConnections
 );
 
+
 router.put(
   "/update-connection-status",
   isUserLoggedIn,
+  checkInvestorApproval,
   authorizeRole("investor"),
   investorController.updateConnectionStatus
 );

@@ -16,6 +16,7 @@ const InvestorAuthModal = ({ show, handleClose }) => {
     maxInvestment: "",
     aadharPan: null,
     certificate: null,
+    profileImage: null,
   });
 
   const handleSignupChange = (e) => {
@@ -30,7 +31,7 @@ const handleSignupSubmit = async (e) => {
     const formData = new FormData();
 
     for (const key in signupData) {
-      if (key !== "aadharPan" && key !== "certificate") {
+      if (key !== "aadharPan" && key !== "certificate" && key !== "profileImage") {
         formData.append(key, signupData[key]);
       }
     }
@@ -40,6 +41,9 @@ const handleSignupSubmit = async (e) => {
     }
     if (signupData.certificate) {
       formData.append('certificate', signupData.certificate);
+    }
+     if (signupData.profileImage) {
+      formData.append('profileImage', signupData.profileImage);
     }
 
     const res = await axios.post("/api/investors/register-investor", formData, {
@@ -61,6 +65,7 @@ const handleSignupSubmit = async (e) => {
       maxInvestment: "",
       aadharPan: null,
       certificate: null,
+      profileImage: null,
     });
     handleClose();
 
@@ -171,6 +176,15 @@ const handleSignupSubmit = async (e) => {
               value={signupData.maxInvestment}
               onChange={handleSignupChange}
             />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <label htmlFor="">Profile Image</label>
+            <Form.Control
+                               type="file"
+                               name="profileImage"
+                               onChange={handleChange}
+                             />
           </Form.Group>
 
            <Form.Group className="mb-3">

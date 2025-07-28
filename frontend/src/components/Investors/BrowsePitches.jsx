@@ -25,81 +25,116 @@ const BrowsePitches = () => {
   const [period, setPeriod] = useState("");
   const [notes, setNotes] = useState("");
   const [flippedCards, setFlippedCards] = useState({});
+  const [savedEntrepreneurs, setSavedEntrepreneurs] = useState([]);
 
-  const fetchPitches = async () => {
+const fetchPitches = async () => {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await axios.get("/api/investors/browse-pitches", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const resSaved = await axios.get("/api/investors/get-saved-entrepreneurs", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+   const resConnections = await axios.get(`/api/investors/get-connections`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
+
+// Build map of entrepreneurId => status
+const entrepreneurStatusMap = {};
+console.log("Connections Data:", resConnections.data.connections);
+resConnections.data.connections.forEach(conn => {
+  entrepreneurStatusMap[conn.entrepreneur._id] = conn.status;
+});
+    const savedIds = resSaved.data.savedEntrepreneurs.map(e => e._id);
+    setSavedEntrepreneurs(savedIds);
+
+    const mappedPitches = res.data.entrepreneurs.map((item) => {
+      let image = null;
+      if (
+        item.profileImage &&
+        item.profileImage.data &&
+        item.profileImage.data.data
+      ) {
+        const base64String = btoa(
+          new Uint8Array(item.profileImage.data.data).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            ""
+          )
+        );
+        image = `data:${item.profileImage.contentType};base64,${base64String}`;
+      }
+
+      return {
+        id: item._id,
+        name: item.startupname || "Untitled Startup",
+        owner: item.name,
+        location: "India",
+        category: item.industry,
+        categories: item.industry ? [item.industry] : [],
+        education: item.education || "Not provided",
+        fundingNeed: item.fundinggoal,
+        startupStage: item.startupStage || "Not specified",
+        teamSize: item.teamSize || "Not specified",
+        description: item.description,
+        email: item.email,
+        contact: item.contactno,
+        linkdinurl: item.linkdinurl?.startsWith("http")
+          ? item.linkdinurl
+          : `https://${item.linkdinurl}`,
+        bio: item.bio || "No bio available",
+        website: item.websiteurl?.startsWith("http")
+          ? item.websiteurl
+          : `https://${item.websiteurl}`,
+        vision: item.vision || "No vision provided",
+        image,
+        minInvestment: 10000,
+        maxInvestment: 500000,
+        saved: savedIds.includes(item._id),
+        connectionStatus: entrepreneurStatusMap[item._id] || "None",
+      };
+    });
+
+    setPitches(mappedPitches);
+  } catch (err) {
+    console.error("Failed to fetch pitches:", err);
+  }
+};
+
+useEffect(() => {
+  fetchPitches();
+}, []);
+
+
+
+  const handleSaveToggle = async (entrepreneurId) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get("/api/investors/browse-pitches", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const mappedPitches = res.data.entrepreneurs.map((item) => {
-        let image = "/images/person1.png"; // fallback
-        if (
-          item.profileImage &&
-          item.profileImage.data &&
-          item.profileImage.data.data
-        ) {
-          const base64String = btoa(
-            new Uint8Array(item.profileImage.data.data).reduce(
-              (data, byte) => data + String.fromCharCode(byte),
-              ""
-            )
-          );
-          image = `data:${item.profileImage.contentType};base64,${base64String}`;
-        }
-
-        return {
-          id: item._id,
-          name: item.startupname || "Untitled Startup",
-          owner: item.name,
-          location: "India",
-          category: item.industry,
-          categories: item.industry ? [item.industry] : [],
-          fundingNeed: item.fundinggoal,
-          description: item.description,
-          email: item.email,
-          contact: item.contactno,
-          education: item.education,
-          linkdinurl: item.linkdinurl?.startsWith("http")
-            ? item.linkdinurl
-            : `https://${item.linkdinurl}`,
-          bio: item.bio || "No bio available",
-          website: item.websiteurl?.startsWith("http")
-            ? item.websiteurl
-            : `https://${item.websiteurl}`,
-          vision: item.vision || "No vision provided",
-          image: image,
-          minInvestment: 10000,
-          maxInvestment: 500000,
-          saved: false,
-          connectionStatus: "None",
-        };
-      });
-
-      setPitches(mappedPitches);
+      if (savedEntrepreneurs.includes(entrepreneurId)) {
+        // Call remove API
+        await axios.delete(
+          `/api/investors/remove-saved-entrepreneur/${entrepreneurId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSavedEntrepreneurs(savedEntrepreneurs.filter(id => id !== entrepreneurId));
+        toast.success("Entrepreneur removed from saved list");
+      } else {
+        // Call save API
+        await axios.post(
+          `/api/investors/save-entrepreneur`,
+          { entrepreneurId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSavedEntrepreneurs([...savedEntrepreneurs, entrepreneurId]);
+        toast.success("Entrepreneur saved");
+      }
     } catch (err) {
-      console.error("Failed to fetch pitches:", err);
+      toast.error(err.response?.data?.message || "Failed to update saved status");
     }
   };
 
-  useEffect(() => {
-    fetchPitches();
-  }, []);
-
-  const handleSavePitch = async (entrepreneurId) => {
-    const token = localStorage.getItem("token");
-    try {
-      const response = await axios.post(
-        `/api/investors/save-entrepreneur`,
-        { entrepreneurId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      toast.success(response.data.message || "Pitch saved!");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to save pitch");
-    }
-  };
 
   const handleInvestmentSubmit = async () => {
     const token = localStorage.getItem("token");
@@ -122,9 +157,33 @@ const BrowsePitches = () => {
     }
   };
 
+    const handleConnect = async (entrepreneurId) => {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await axios.post(
+      `/api/investors/make-connection`, // ✅ updated route
+      { entrepreneurId }, // ✅ updated payload key
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    toast.success(res.data.message || "Connection request sent!");
+    fetchPitches(); // Optional: if you want to refresh list
+  } catch (err) {
+    toast.error(
+      err.response?.data?.message || "Failed to send connection request"
+    );
+  }
+};
+
+
   return (
     <div className="container py-4">
       <div className="row">
+        <h3>Browse Pitches</h3>
         {pitches.map((inv) => (
           <div
             key={inv.id}
@@ -162,7 +221,7 @@ const BrowsePitches = () => {
                 >
                   <img
                     src={inv.image}
-                    alt="Investor"
+                    alt="Entrepreneur"
                     className="rounded-circle"
                     style={{
                       height: "50px",
@@ -233,11 +292,11 @@ const BrowsePitches = () => {
                       className="text-muted mb-0 me-2"
                       style={{ width: "120px" }}
                     >
-                      Min Investment
+                      Education
                     </Form.Label>
                     <Form.Control
                       type="text"
-                      value={`₹${inv.minInvestment}`}
+                      value={inv.education || "N/A"}
                       disabled
                     />
                   </Form.Group>
@@ -246,31 +305,41 @@ const BrowsePitches = () => {
                       className="text-muted mb-0 me-2"
                       style={{ width: "120px" }}
                     >
-                      Max Investment
+                      Funding Needed
                     </Form.Label>
                     <Form.Control
                       type="text"
-                      value={`₹${inv.maxInvestment}`}
+                      value={`₹${inv.fundingNeed}`}
                       disabled
                     />
                   </Form.Group>
 
                   <div className="d-flex justify-content-center gap-4">
-                    <Button
-                      size="sm"
-                      variant={
-                        inv.connectionStatus === "Pending"
-                          ? "secondary"
-                          : inv.connectionStatus === "Accepted"
-                          ? "primary"
-                          : inv.connectionStatus === "Rejected"
-                          ? "dark"
-                          : "outline-primary"
-                      }
-                      onClick={() => toast("Connect logic here")}
-                    >
-                      Connect
-                    </Button>
+       <Button
+  size="sm"
+  variant={
+    inv.connectionStatus === "Pending"
+      ? "secondary"
+      : inv.connectionStatus === "Accepted"
+      ? "primary"
+      : inv.connectionStatus === "Rejected"
+      ? "dark"
+      : "outline-primary"
+  }
+  onClick={() => handleConnect(inv.id)}
+  disabled={
+    inv.connectionStatus === "Pending" || inv.connectionStatus === "Rejected"
+  }
+>
+  {inv.connectionStatus === "Pending"
+    ? "Pending"
+    : inv.connectionStatus === "Accepted"
+    ? "Connected"
+    : inv.connectionStatus === "Rejected"
+    ? "Rejected"
+    : "Connect"}
+</Button>
+
                     <Button
                       size="sm"
                       variant={"outline-dark"}
@@ -279,12 +348,13 @@ const BrowsePitches = () => {
                       Invest Now
                     </Button>
                     <Button
-                      size="sm"
-                      variant={inv.saved ? "success" : "outline-success"}
-                      onClick={() => handleSavePitch(inv.id)}
-                    >
-                      {inv.saved ? "✓ Saved" : "Save"}
-                    </Button>
+            size="sm"
+            variant={savedEntrepreneurs.includes(inv.id) ? "success" : "outline-success"}
+            onClick={() => handleSaveToggle(inv.id)}
+
+          >
+            {savedEntrepreneurs.includes(inv.id) ? "✓ Saved" : "Save"}
+          </Button>
                   </div>
                 </div>
               </div>
@@ -323,22 +393,20 @@ const BrowsePitches = () => {
                   </button>
                 </div>
                 <div className="card-body">
-                  <p>
-                    <strong>Contact:</strong> {inv.contact}
+                   <p>
+                    <strong>Bio:</strong> {inv.bio}
                   </p>
                   <p>
-                    <strong>Education:</strong> {inv.education}
+                    <strong>Startup Stage:</strong> {inv.startupStage}
                   </p>
                   <p>
-                    <strong>Categories:</strong>{" "}
-                    {inv.categories.join(", ") || "N/A"}
+                    <strong>Team Size</strong> {inv.teamSize}
                   </p>
+                  
                   <p>
                     <strong>Vision:</strong> {inv.vision}
                   </p>
-                  <p>
-                    <strong>Bio:</strong> {inv.bio}
-                  </p>
+                 
                   <p>
                     <strong>Funding Needed:</strong> ₹{inv.fundingNeed}
                   </p>

@@ -1,5 +1,7 @@
 const Entrepreneur = require("../models/userModel");
 const Investor = require("../models/investorModel");
+const Connection = require("../models/connectionModel");
+
 
 exports.RegisterInvestor = async (req, res) => {
   try {
@@ -32,7 +34,7 @@ exports.RegisterInvestor = async (req, res) => {
     // console.log("Uploaded files:", files);
 
     // Validate files exist
-    if (!files.aadharPan || !files.certificate) {
+    if (!files.aadharPan || !files.certificate || !files.profileImage) {
       return res.status(400).json({ message: "Please upload Aadhar/PAN and Certificate files" });
     }
 
@@ -58,6 +60,11 @@ exports.RegisterInvestor = async (req, res) => {
         data: files.certificate[0].buffer,
         contentType: files.certificate[0].mimetype,
         filename: files.certificate[0].originalname
+      },
+       profileImage: {
+        data: files.profileImage[0].buffer,
+        contentType: files.profileImage[0].mimetype,
+        filename: files.profileImage[0].originalname
       },
     });
 
@@ -273,9 +280,9 @@ exports.updateConnectionStatus = async (req, res) => {
 
 exports.getInvestorConnections = async (req, res) => {
   try {
-    const investorId = req.params.id; // or req.user.id if using auth
+    const investorId = req.user.id; // or req.user.id if using auth
 
-    const connections = await Connection.find({ investor: investorId, status: "Accepted" })
+    const connections = await Connection.find({ investor: investorId})
       .populate('entrepreneur'); // get full entrepreneur details
 
     res.status(200).json({ connections });

@@ -5,7 +5,7 @@ import { useAuthContext } from "../../context/AuthContext";
 import { useSocketContext } from "../../context/SocketContext";
 import axios from "axios";
 
-function Messages() {
+function Investor_Messages() {
   const [activeChatId, setActiveChatId] = useState(null);
   const [chatList, setChatList] = useState([]);
   const [messageText, setMessageText] = useState("");
@@ -62,7 +62,62 @@ function Messages() {
       fetchData();
     }
   }, [authUser]);
+
+  // Fetch messages when chat changes
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const fetchMessages = async () => {
+      try {
+        const res = await axios.get(`/api/messages/${activeChatId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setMessages(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    if (activeChatId) fetchMessages();
+  }, [activeChatId, authUser]);
+
+  useEffect(() => {
+    // console.log("✅ onlineUsers from socket:", onlineUsers);
+  }, [onlineUsers]);
+
+  const handleNewMessage = (newMsg) => {
+    // Always update last message
+    setChatList((prev) =>
+      prev.map((chat) => {
+        if (chat.id === newMsg.senderId || chat.id === newMsg.receiverId) {
+          const isNotActive = chat.id !== activeChatId;
+          const isFromSender = newMsg.senderId === chat.id;
+          return {
+            ...chat,
+            lastMessage: newMsg.message,
+            unread:
+              isNotActive && isFromSender
+                ? (chat.unread || 0) + 1
+                : chat.unread,
+          };
+        }
+        return chat;
+      })
+    );
+
+    // Only add to messages if it’s for active chat
+    if (
+      newMsg.senderId === activeChatId ||
+      newMsg.receiverId === activeChatId
+    ) {
+      setMessages((prev) => [...prev, newMsg]);
+    }
+  };
   
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("newMessage", handleNewMessage);
+    return () => socket.off("newMessage", handleNewMessage);
+  }, [socket, activeChatId]);
+
   const handleChatClick = async (chatId) => {
     if (!authUser || !authUser._id) {
       console.error("authUser or authUser.id is undefined");
@@ -85,59 +140,6 @@ function Messages() {
     }
   };
 
-  // Fetch messages when chat changes
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const fetchMessages = async () => {
-      try {
-        const res = await axios.get(`/api/messages/${activeChatId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setMessages(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    if (activeChatId) fetchMessages();
-  }, [activeChatId, authUser]);
-
-  useEffect(() => {
-  }, [onlineUsers]);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleNewMessage = (newMsg) => {
-      if (
-        newMsg.senderId === activeChatId ||
-        newMsg.receiverId === activeChatId
-      ) {
-        setMessages((prev) => [...prev, newMsg]);
-      }
-
-      setChatList((prev) =>
-        prev.map((chat) => {
-          if (chat.id === newMsg.senderId || chat.id === newMsg.receiverId) {
-            const isNotActive = chat.id !== activeChatId;
-            const isFromSender = newMsg.senderId === chat.id;
-            return {
-              ...chat,
-              lastMessage: newMsg.message,
-              unread:
-                isNotActive && isFromSender
-                  ? (chat.unread || 0) + 1
-                  : chat.unread,
-            };
-          }
-          return chat;
-        })
-      );
-    };
-
-    socket.on("newMessage", handleNewMessage);
-    return () => socket.off("newMessage", handleNewMessage);
-  }, [socket, activeChatId]);
-
   const sendMessage = async () => {
     if (!messageText.trim()) return;
     const token = localStorage.getItem("token");
@@ -147,7 +149,7 @@ function Messages() {
         `/api/messages/send/${activeChatId}`,
         {
           message: messageText,
-          receiverModel: "investor", // or "Investor" depending on the receiver
+          receiverModel: "entrepreneur", // or "Investor" depending on the receiver
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -164,10 +166,7 @@ function Messages() {
   const activeChat = chatList.find((c) => c.id === activeChatId);
 
   return (
-    <div
-      className="d-flex"
-      style={{ height: "90vh", background: "#f4f6f8", marginTop: "2px" }}
-    >
+    <div className="d-flex" style={{ height: "90vh", background: "#f4f6f8" }}>
       {/* Sidebar */}
       <div
         className="border-end bg-white"
@@ -217,7 +216,11 @@ function Messages() {
                   <small className="text-muted">{chat.lastMessage}</small>
                 </div>
               </div>
-              <>{chat.unread > 0 && <Badge bg="danger">{chat.unread}</Badge>}</>
+              {chat.unread > 0 && (
+                <Badge bg="danger" pill>
+                  {chat.unread}
+                </Badge>
+              )}
             </ListGroup.Item>
           ))}
         </ListGroup>
@@ -259,13 +262,13 @@ function Messages() {
                   let isRightSide = false;
 
                   if (
-                    msg.senderModel === "entrepreneur" &&
-                    msg.receiverModel === "investor"
+                    msg.senderModel === "investor" &&
+                    msg.receiverModel === "entrepreneur"
                   ) {
                     isRightSide = true;
                   } else if (
-                    msg.senderModel === "investor" &&
-                    msg.receiverModel === "entrepreneur"
+                    msg.senderModel === "entrepreneur" &&
+                    msg.receiverModel === "investor"
                   ) {
                     isRightSide = false;
                   }
@@ -339,4 +342,4 @@ function Messages() {
   );
 }
 
-export default Messages;
+export default Investor_Messages;
